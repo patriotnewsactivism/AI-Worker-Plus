@@ -1,0 +1,9 @@
+
+> ai-employee-app@0.0.0 dev
+> vite --port 5175
+
+
+  VITE v7.1.11  ready in 200 ms
+
+  ➜  Local:   http://localhost:5175/
+  ➜  Network: use --host to expose

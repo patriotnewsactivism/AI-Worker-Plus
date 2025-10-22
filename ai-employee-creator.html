@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Employee Creator Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .gradient-text {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        .chat-bubble {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+            }
+        }
+
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-content ul, .markdown-content ol {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .markdown-content code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+
+        .markdown-content pre {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+
+        .template-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .template-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .skill-tag {
+            transition: all 0.2s ease;
+        }
+
+        .skill-tag:hover {
+            transform: scale(1.05);
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body class="min-h-screen">
+    <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+        <!-- Header -->
+        <header class="text-center mb-8 text-white">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+                    <i class="fas fa-robot text-purple-600 text-xl"></i>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold">AI Employee Creator Pro</h1>
+            </div>
+            <p class="text-lg text-purple-100">Build intelligent AI assistants with custom personas and expertise</p>
+            <div class="flex justify-center gap-4 mt-4">
+                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">
+                    <i class="fas fa-users mr-1"></i> 10k+ Users
+                </span>
+                <span class="px-3 py-1 bg-white/20 rounded-full text-sm">
+                    <i class="fas fa-star mr-1"></i> 4.9 Rating
+                </span>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Panel: AI Employee Configuration -->
+            <div class="lg:col-span-1">
+                <div class="glass-effect rounded-xl shadow-xl p-6">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <i class="fas fa-user-cog text-purple-600"></i>
+                        AI Employee Configuration
+                    </h2>
+
+                    <!-- Quick Templates -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Quick Templates</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="loadTemplate('assistant')" class="template-card bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium">
+                                <i class="fas fa-briefcase mr-1"></i> Assistant
+                            </button>
+                            <button onclick="loadTemplate('researcher')" class="template-card bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium">
+                                <i class="fas fa-microscope mr-1"></i> Researcher
+                            </button>
+                            <button onclick="loadTemplate('analyst')" class="template-card bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-2 rounded-lg text-sm font-medium">
+                                <i class="fas fa-chart-line mr-1"></i> Analyst
+                            </button>
+                            <button onclick="loadTemplate('creative')" class="template-card bg-gradient-to-r from-pink-500 to-pink-600 text-white px-3 py-2 rounded-lg text-sm font-medium">
+                                <i class="fas fa-palette mr-1"></i> Creative
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Employee Configuration -->
+                    <div class="space-y-4">
+                        <div>
+                            <label for="ai-role" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-id-badge mr-1 text-purple-600"></i> Role / Job Title
+                            </label>
+                            <input type="text" id="ai-role" placeholder="e.g., Legal Research Assistant" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                        </div>
+
+                        <div>
+                            <label for="ai-skills" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-tools mr-1 text-purple-600"></i> Key Skills
+                            </label>
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" id="ai-skills" placeholder="e.g., Constitutional law, case summary" 
+                                       class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                                <button onclick="addSkillTag()" class="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div id="skills-container" class="flex flex-wrap gap-2"></div>
+                        </div>
+
+                        <div>
+                            <label for="ai-instructions" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-clipboard-list mr-1 text-purple-600"></i> Core Instructions (Persona)
+                            </label>
+                            <textarea id="ai-instructions" rows="4" 
+                                      placeholder="e.g., Act as a highly skilled paralegal. Your responses should be formal, well-structured, and cite relevant precedents where possible." 
+                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"></textarea>
+                        </div>
+
+                        <div>
+                            <label for="ai-tone" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-comment-dots mr-1 text-purple-600"></i> Response Tone
+                            </label>
+                            <select id="ai-tone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                                <option value="professional">Professional</option>
+                                <option value="friendly">Friendly</option>
+                                <option value="casual">Casual</option>
+                                <option value="formal">Formal</option>
+                                <option value="creative">Creative</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Save/Load Configuration -->
+                    <div class="mt-6 flex gap-2">
+                        <button onclick="saveConfiguration()" class="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                            <i class="fas fa-save mr-1"></i> Save
+                        </button>
+                        <button onclick="loadConfiguration()" class="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                            <i class="fas fa-upload mr-1"></i> Load
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="glass-effect rounded-xl shadow-xl p-6 mt-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-purple-600"></i>
+                        Session Statistics
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Messages</span>
+                            <span id="msg-count" class="font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Words Generated</span>
+                            <span id="word-count" class="font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Session Time</span>
+                            <span id="session-time" class="font-semibold">00:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Chat Interface -->
+            <div class="lg:col-span-2">
+                <div class="glass-effect rounded-xl shadow-xl overflow-hidden">
+                    <!-- Chat Header -->
+                    <div class="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-4 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div>
+                                <h3 id="ai-display-name" class="font-semibold">AI Employee</h3>
+                                <p class="text-xs text-purple-200">Ready to assist</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="toggleDarkMode()" class="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                                <i class="fas fa-moon"></i>
+                            </button>
+                            <button onclick="toggleSettings()" class="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Chat Messages -->
+                    <div id="response-container" class="h-96 overflow-y-auto custom-scroll p-4 space-y-4 bg-gray-50">
+                        <div class="text-center text-gray-500 py-8">
+                            <i class="fas fa-comments text-4xl mb-4 text-gray-300"></i>
+                            <p>Start a conversation with your AI employee</p>
+                            <p class="text-sm mt-2">Configure your AI assistant on the left panel</p>
+                        </div>
+                    </div>
+
+                    <!-- Loading Indicator -->
+                    <div id="loading-indicator" class="hidden p-4 bg-gray-50 border-t">
+                        <div class="flex items-center gap-3">
+                            <div class="typing-indicator">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <span class="text-sm text-gray-600">AI is thinking...</span>
+                        </div>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div id="error-message" class="hidden bg-red-50 border-l-4 border-red-500 p-4 m-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                            <p class="text-red-700"></p>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="border-t bg-white p-4">
+                        <div class="flex gap-2 mb-3">
+                            <button onclick="insertTemplate('meeting')" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors">
+                                📅 Meeting Notes
+                            </button>
+                            <button onclick="insertTemplate('summary')" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors">
+                                📄 Summary
+                            </button>
+                            <button onclick="insertTemplate('analysis')" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors">
+                                📊 Analysis
+                            </button>
+                            <button onclick="insertTemplate('creative')" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors">
+                                💡 Creative Idea
+                            </button>
+                        </div>
+                        <div class="flex gap-2">
+                            <textarea id="task-input" rows="3" 
+                                      placeholder="Type your message here... (Shift+Enter for new line)" 
+                                      class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
+                                      onkeydown="handleKeyPress(event)"></textarea>
+                            <button onclick="attachFile()" class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <button onclick="generateResponse(false)" id="generate-btn" 
+                                    class="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all pulse-animation">
+                                <i class="fas fa-paper-plane mr-1"></i> Send
+                            </button>
+                        </div>
+                        <div class="flex justify-between items-center mt-2">
+                            <div class="flex gap-2">
+                                <button onclick="generateResponse(true)" id="research-btn" 
+                                        class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                    <i class="fas fa-search mr-1"></i> Continue
+                                </button>
+                                <button onclick="clearConversation()" id="clear-task-btn" 
+                                        class="px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                                    <i class="fas fa-broom mr-1"></i> Clear
+                                </button>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="copyConversation()" id="copy-btn" 
+                                        class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm">
+                                    <i class="fas fa-copy mr-1"></i> Copy
+                                </button>
+                                <button onclick="saveAsPdf()" id="pdf-btn" 
+                                        class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm">
+                                    <i class="fas fa-file-pdf mr-1"></i> PDF
+                                </button>
+                                <button onclick="exportChat()" id="export-btn" 
+                                        class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm">
+                                    <i class="fas fa-download mr-1"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="text-center mt-8 text-white text-sm">
+            <div class="flex justify-center items-center gap-6">
+                <span><i class="fas fa-bolt mr-1"></i> Powered by Advanced AI</span>
+                <span><i class="fas fa-shield-alt mr-1"></i> Secure & Private</span>
+                <span><i class="fas fa-code mr-1"></i> Version 2.0</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Global variables
+        let chatHistory = [];
+        let skillTags = [];
+        let sessionStartTime = Date.now();
+        let messageCount = 0;
+        let wordCount = 0;
+        let isDarkMode = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatistics();
+            setInterval(updateSessionTime, 1000);
+            loadSavedConfiguration();
+        });
+
+        // Templates
+        const templates = {
+            assistant: {
+                role: 'Personal Assistant',
+                skills: 'Scheduling, Email Management, Task Coordination',
+                instructions: 'Act as a professional personal assistant. Be organized, proactive, and helpful. Manage tasks efficiently and communicate clearly.'
+            },
+            researcher: {
+                role: 'Research Analyst',
+                skills: 'Data Analysis, Literature Review, Critical Thinking',
+                instructions: 'Act as a skilled research analyst. Provide evidence-based insights, cite sources, and maintain objectivity in your analysis.'
+            },
+            analyst: {
+                role: 'Business Analyst',
+                skills: 'Data Visualization, Market Research, Strategic Planning',
+                instructions: 'Act as a business analyst. Focus on data-driven insights, identify trends, and provide actionable recommendations.'
+            },
+            creative: {
+                role: 'Creative Director',
+                skills: 'Ideation, Design Thinking, Storytelling',
+                instructions: 'Act as a creative professional. Think outside the box, provide innovative solutions, and express ideas vividly.'
+            }
+        };
+
+        const messageTemplates = {
+            meeting: 'Please help me prepare for the upcoming meeting about [topic]. I need to discuss: [key points]',
+            summary: 'Please summarize the following information: [paste text here]',
+            analysis: 'Analyze this data/situation and provide insights: [details]',
+            creative: 'Help me brainstorm creative ideas for [project/goal]'
+        };
+
+        // Load template
+        function loadTemplate(type) {
+            const template = templates[type];
+            if (template) {
+                document.getElementById('ai-role').value = template.role;
+                document.getElementById('ai-skills').value = template.skills;
+                document.getElementById('ai-instructions').value = template.instructions;
+                updateAIDisplayName();
+                showNotification('Template loaded successfully!', 'success');
+            }
+        }
+
+        // Insert message template
+        function insertTemplate(type) {
+            const template = messageTemplates[type];
+            if (template) {
+                document.getElementById('task-input').value = template;
+                document.getElementById('task-input').focus();
+            }
+        }
+
+        // Skill tags management
+        function addSkillTag() {
+            const skillsInput = document.getElementById('ai-skills');
+            const skill = skillsInput.value.trim();
+            
+            if (skill && !skillTags.includes(skill)) {
+                skillTags.push(skill);
+                renderSkillTags();
+                skillsInput.value = '';
+            }
+        }
+
+        function removeSkillTag(skill) {
+            skillTags = skillTags.filter(s => s !== skill);
+            renderSkillTags();
+        }
+
+        function renderSkillTags() {
+            const container = document.getElementById('skills-container');
+            container.innerHTML = skillTags.map(skill => `
+                <span class="skill-tag px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm flex items-center gap-1">
+                    ${skill}
+                    <button onclick="removeSkillTag('${skill}')" class="hover:text-purple-900">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </span>
+            `).join('');
+        }
+
+        // Update AI display name
+        function updateAIDisplayName() {
+            const role = document.getElementById('ai-role').value.trim();
+            const displayName = role || 'AI Employee';
+            document.getElementById('ai-display-name').textContent = displayName;
+        }
+
+        // Handle key press
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                generateResponse(false);
+            }
+        }
+
+        // Generate response
+        async function generateResponse(isFollowUp) {
+            const role = document.getElementById('ai-role').value.trim();
+            const skills = document.getElementById('ai-skills').value.trim();
+            const instructions = document.getElementById('ai-instructions').value.trim();
+            const tone = document.getElementById('ai-tone').value;
+            const task = document.getElementById('task-input').value.trim();
+
+            if (!role || !task) {
+                showError('AI Role and message cannot be empty.');
+                return;
+            }
+
+            if (!isFollowUp) {
+                chatHistory = [];
+                responseContainer.innerHTML = '';
+            }
+
+            appendMessage(task, 'You');
+            chatHistory.push({ role: 'user', parts: [{ text: task }] });
+            document.getElementById('task-input').value = '';
+
+            showLoading(true);
+            hideError();
+            disableButtons(true);
+
+            const systemPrompt = `You are an AI assistant. Role: ${role}. Skills: ${skills}, ${skillTags.join(', ')}. Instructions: ${instructions}. Tone: ${tone}. Respond appropriately.`;
+
+            // Simulate API call (replace with actual API)
+            setTimeout(() => {
+                const mockResponse = generateMockResponse(role, task, tone);
+                chatHistory.push({ role: 'model', parts: [{ text: mockResponse }] });
+                appendMessage(mockResponse, 'AI Employee');
+                
+                showLoading(false);
+                disableButtons(false);
+                updateStatistics();
+                
+                // Scroll to bottom
+                const container = document.getElementById('response-container');
+                container.scrollTop = container.scrollHeight;
+            }, 1500 + Math.random() * 1500);
+        }
+
+        // Generate mock response (replace with actual API call)
+        function generateMockResponse(role, task, tone) {
+            const responses = {
+                'Legal Research Assistant': `I'll help you with your legal research. Based on your request about "${task}", I've analyzed the relevant precedents and can provide you with a comprehensive legal memorandum. The key findings suggest that...`,
+                'Personal Assistant': `I understand you need assistance with "${task}". I've organized this into actionable steps and prepared a timeline for completion. Let me break this down for you...`,
+                'Research Analyst': `Thank you for your research query on "${task}". I've conducted a thorough analysis of the available data and identified several important patterns. Here are my key insights...`,
+                'default': `I'll help you with "${task}". Let me provide you with a detailed response based on my expertise and the specific requirements of your request.`
+            };
+
+            let response = responses[role] || responses['default'];
+            
+            // Add tone-specific modifications
+            const toneModifiers = {
+                'professional': response + '\n\nPlease let me know if you need any additional information or clarification on any of these points.',
+                'friendly': response + '\n\nHope this helps! Feel free to ask if there\'s anything else I can assist you with! 😊',
+                'casual': response + '\n\nLet me know what you think or if you need anything else!',
+                'formal': response + '\n\nShould you require further elaboration on any aspect, please do not hesitate to inquire.',
+                'creative': response + '\n\nLet your imagination run wild with these possibilities! I\'m excited to see where this creative journey takes us!'
+            };
+
+            return toneModifiers[tone] || toneModifiers['professional'];
+        }
+
+        // Append message to chat
+        function appendMessage(text, sender) {
+            const container = document.getElementById('response-container');
+            
+            // Remove placeholder if it exists
+            const placeholder = container.querySelector('.text-center');
+            if (placeholder) {
+                placeholder.remove();
+            }
+
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = 'chat-bubble';
+            
+            const senderTag = document.createElement('div');
+            senderTag.textContent = sender;
+            senderTag.className = `text-sm font-bold mb-1 ${sender === 'You' ? 'text-blue-700' : 'text-purple-700'}`;
+            
+            const messageBubble = document.createElement('div');
+            
+            if (sender === 'AI Employee') {
+                // Convert markdown to HTML for AI responses
+                messageBubble.innerHTML = marked.parse(text);
+                messageBubble.className = 'markdown-content p-3 rounded-lg bg-purple-100 border-l-4 border-purple-500';
+            } else {
+                messageBubble.textContent = text;
+                messageBubble.className = 'p-3 rounded-lg bg-blue-100 border-l-4 border-blue-500';
+            }
+            
+            messageWrapper.appendChild(senderTag);
+            messageWrapper.appendChild(messageBubble);
+            container.appendChild(messageWrapper);
+
+            // Update word count
+            if (sender === 'AI Employee') {
+                wordCount += text.split(/\s+/).length;
+            }
+        }
+
+        // Clear conversation
+        function clearConversation() {
+            if (confirm('Are you sure you want to clear the conversation?')) {
+                chatHistory = [];
+                document.getElementById('response-container').innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-comments text-4xl mb-4 text-gray-300"></i>
+                        <p>Start a conversation with your AI employee</p>
+                        <p class="text-sm mt-2">Configure your AI assistant on the left panel</p>
+                    </div>
+                `;
+                messageCount = 0;
+                wordCount = 0;
+                updateStatistics();
+                showNotification('Conversation cleared', 'info');
+            }
+        }
+
+        // Copy conversation
+        function copyConversation() {
+            const conversationText = chatHistory.map(turn => 
+                `${turn.role === 'user' ? 'You' : 'AI Employee'}:\n${turn.parts[0].text}`
+            ).join('\n\n');
+
+            if (!conversationText) {
+                showError('No conversation to copy.');
+                return;
+            }
+
+            navigator.clipboard.writeText(conversationText).then(() => {
+                showNotification('Conversation copied to clipboard!', 'success');
+            });
+        }
+
+        // Save as PDF
+        function saveAsPdf() {
+            const conversationText = chatHistory.map(turn => 
+                `${turn.role === 'user' ? 'You' : 'AI Employee'}:\n${turn.parts[0].text}`
+            ).join('\n\n');
+
+            if (!conversationText) {
+                showError('No conversation to export.');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const margin = 15;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const textWidth = pageWidth - margin * 2;
+            
+            // Add title
+            doc.setFontSize(16);
+            doc.text('AI Employee Conversation', margin, margin);
+            
+            // Add date
+            doc.setFontSize(10);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, margin, margin + 10);
+            
+            // Add conversation
+            doc.setFontSize(12);
+            const lines = doc.splitTextToSize(conversationText, textWidth);
+            doc.text(lines, margin, margin + 20);
+            
+            doc.save('ai-conversation.pdf');
+            showNotification('PDF saved successfully!', 'success');
+        }
+
+        // Export chat
+        function exportChat() {
+            const conversationData = {
+                timestamp: new Date().toISOString(),
+                role: document.getElementById('ai-role').value,
+                skills: document.getElementById('ai-skills').value,
+                instructions: document.getElementById('ai-instructions').value,
+                chatHistory: chatHistory,
+                statistics: {
+                    messageCount: messageCount,
+                    wordCount: wordCount,
+                    sessionTime: document.getElementById('session-time').textContent
+                }
+            };
+
+            const dataStr = JSON.stringify(conversationData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `ai-conversation-${Date.now()}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            showNotification('Chat exported successfully!', 'success');
+        }
+
+        // Save configuration
+        function saveConfiguration() {
+            const config = {
+                role: document.getElementById('ai-role').value,
+                skills: document.getElementById('ai-skills').value,
+                skillTags: skillTags,
+                instructions: document.getElementById('ai-instructions').value,
+                tone: document.getElementById('ai-tone').value
+            };
+
+            localStorage.setItem('ai-employee-config', JSON.stringify(config));
+            showNotification('Configuration saved!', 'success');
+        }
+
+        // Load configuration
+        function loadConfiguration() {
+            const saved = localStorage.getItem('ai-employee-config');
+            if (saved) {
+                const config = JSON.parse(saved);
+                document.getElementById('ai-role').value = config.role || '';
+                document.getElementById('ai-skills').value = config.skills || '';
+                document.getElementById('ai-instructions').value = config.instructions || '';
+                document.getElementById('ai-tone').value = config.tone || 'professional';
+                skillTags = config.skillTags || [];
+                renderSkillTags();
+                updateAIDisplayName();
+                showNotification('Configuration loaded!', 'success');
+            } else {
+                showError('No saved configuration found.');
+            }
+        }
+
+        // Load saved configuration on startup
+        function loadSavedConfiguration() {
+            const saved = localStorage.getItem('ai-employee-config');
+            if (saved) {
+                loadConfiguration();
+            }
+        }
+
+        // Attach file (placeholder)
+        function attachFile() {
+            showNotification('File attachment feature coming soon!', 'info');
+        }
+
+        // Toggle dark mode (placeholder)
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            showNotification(`Dark mode ${isDarkMode ? 'enabled' : 'disabled'}!`, 'info');
+        }
+
+        // Toggle settings (placeholder)
+        function toggleSettings() {
+            showNotification('Advanced settings coming soon!', 'info');
+        }
+
+        // Show/hide loading
+        function showLoading(show) {
+            const indicator = document.getElementById('loading-indicator');
+            if (show) {
+                indicator.classList.remove('hidden');
+            } else {
+                indicator.classList.add('hidden');
+            }
+        }
+
+        // Disable/enable buttons
+        function disableButtons(disable) {
+            document.getElementById('generate-btn').disabled = disable;
+            document.getElementById('research-btn').disabled = disable;
+        }
+
+        // Show error
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            errorElement.querySelector('p').textContent = message;
+            errorElement.classList.remove('hidden');
+            setTimeout(() => {
+                errorElement.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Hide error
+        function hideError() {
+            document.getElementById('error-message').classList.add('hidden');
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500',
+                warning: 'bg-yellow-500'
+            };
+
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-pulse`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            document.getElementById('msg-count').textContent = messageCount;
+            document.getElementById('word-count').textContent = wordCount;
+        }
+
+        // Update session time
+        function updateSessionTime() {
+            const elapsed = Date.now() - sessionStartTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            document.getElementById('session-time').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Update message count
+        document.getElementById('generate-btn').addEventListener('click', () => {
+            messageCount += 2; // User + AI message
+            updateStatistics();
+        });
+
+        // Monitor role input changes
+        document.getElementById('ai-role').addEventListener('input', updateAIDisplayName);
+    </script>
+</body>
+</html>
