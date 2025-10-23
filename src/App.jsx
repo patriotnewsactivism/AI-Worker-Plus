@@ -78,21 +78,31 @@ function App() {
     return () => clearInterval(timer);
   }, []);
   
-  // Handle speech recognition
+  // Handle speech recognition - Check transcript continuously while listening
   useEffect(() => {
-    if (transcript && !listening) {
+    if (listening && transcript) {
       const lowerTranscript = transcript.toLowerCase();
       const lowerAiName = aiName.toLowerCase();
       
+      // Check if the AI name is mentioned in the transcript
       if (lowerTranscript.includes(lowerAiName)) {
         // Extract the actual command (remove the AI name)
-        const command = transcript.substring(transcript.toLowerCase().indexOf(lowerAiName) + aiName.length).trim();
+        const commandIndex = lowerTranscript.indexOf(lowerAiName);
+        const command = transcript.substring(commandIndex + aiName.length).trim();
+        
         if (command) {
+          // Add the voice command to the input
           setInputValue(command);
+          
+          // Process the command
           handleSendMessage(command);
+          
+          // Reset transcript and stop listening
+          resetTranscript();
+          SpeechRecognition.stopListening();
+          toast.success('Voice command received!');
         }
       }
-      resetTranscript();
     }
   }, [transcript, listening, aiName]);
   
@@ -234,7 +244,7 @@ function App() {
       SpeechRecognition.stopListening();
     } else {
       SpeechRecognition.startListening({ continuous: true });
-      toast.success(`Listening for "${aiName}"...`);
+      toast.success(`Listening for "${aiName}"... Speak now!`);
     }
   };
   
@@ -288,6 +298,18 @@ function App() {
     { name: 'Developer', icon: Code, color: 'blue' },
     { name: 'Long Task', icon: Clock, color: 'green' }
   ];
+  
+  // Check for browser support
+  if (!browserSupportsSpeechRecognition) {
+    return (
+      <div className="app-container">
+        <div className="panel-card">
+          <h2>Browser Not Supported</h2>
+          <p>Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari for voice commands.</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="app-container">
