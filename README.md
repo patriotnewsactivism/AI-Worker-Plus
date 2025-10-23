@@ -76,6 +76,7 @@ npm run preview
 - Click the microphone icon (🎤) to enable listening
 - Say your AI's name followed by your request
 - Example: "Assistant, help me debug this React component"
+- **Browser Support**: Works best in Chrome, Edge, or Safari
 
 ### 4. Long Tasks
 - Select the "Long Task" template
@@ -142,6 +143,7 @@ AI-Worker-Plus/
 - Use Chrome, Edge, or Safari (best support)
 - Check microphone permissions in browser
 - Ensure HTTPS or localhost (required for Web Speech API)
+- Speak clearly and at a moderate pace
 
 ### API Errors
 - Verify API key is correct and active
