@@ -1,0 +1,17 @@
+Generating public/private ed25519 key pair.
+Your identification has been saved in /root/.ssh/id_ed25519
+Your public key has been saved in /root/.ssh/id_ed25519.pub
+The key fingerprint is:
+SHA256:uDZbWwAq9PPQgnPMkwko+WqhphalSAGhD52c+wnz3w4 patriotnewsactivism@github.com
+The key's randomart image is:
++--[ED25519 256]--+
+|+.               |
+|.* o             |
+|* O   .          |
+|.* O = o         |
+|o.% & o S        |
+|o+.O B . .       |
+|oo. + E . .      |
+|+.   o * o       |
+|o     o.+        |
++----[SHA256]-----+

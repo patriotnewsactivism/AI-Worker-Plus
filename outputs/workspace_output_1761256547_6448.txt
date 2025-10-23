@@ -1,0 +1,3 @@
+[main 32efa3a] Add features summary documentation
+ 1 file changed, 191 insertions(+)
+ create mode 100644 ai-employee-app/FEATURES_SUMMARY.md

@@ -1,0 +1,48 @@
+On branch main
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Changes to be committed:
+	new file:   ../.created
+	new file:   ../.gitattributes
+	new file:   ../README.md
+	new file:   ../eslint.config.js
+	new file:   ../index.html
+	new file:   ../package-lock.json
+	new file:   ../package.json
+	new file:   ../public/vite.svg
+	new file:   ../src/App.css
+	new file:   ../src/App.jsx
+	new file:   ../src/assets/react.svg
+	new file:   ../src/index.css
+	new file:   ../src/main.jsx
+	new file:   ../vite.config.js
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+	both added:      ../.gitignore
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	../Screenshot (46).png
+	.created
+	../outputs/workspace_output_1761111256_6945.txt
+	../outputs/workspace_output_1761111324_6448.txt
+	../outputs/workspace_output_1761111326_5973.txt
+	../outputs/workspace_output_1761111329_3298.txt
+	../outputs/workspace_output_1761112288_4200.txt
+	../outputs/workspace_output_1761112292_4307.txt
+	../outputs/workspace_output_1761112295_6219.txt
+	../outputs/workspace_output_1761112361_3703.txt
+	../outputs/workspace_output_1761112438_2654.txt
+	../outputs/workspace_output_1761256458_4346.txt
+	../outputs/workspace_output_1761256461_5282.txt
+	../outputs/workspace_output_1761256463_8798.txt
+	../outputs/workspace_output_1761256466_1420.txt
+	../outputs/workspace_output_1761256469_1921.txt
+	../outputs/workspace_output_1761256471_590.txt
+	../outputs/workspace_output_1761256474_7246.txt
+	../outputs/workspace_output_1761256477_797.txt
+	../outputs/workspace_output_1761256479_6168.txt
+

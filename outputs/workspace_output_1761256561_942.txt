@@ -1,0 +1,2 @@
+mv: inter-device move failed: 'ai-employee-app/public' to './public'; unable to remove target: Directory not empty
+mv: inter-device move failed: 'ai-employee-app/src' to './src'; unable to remove target: Directory not empty

@@ -1,0 +1,22 @@
+total 896
+drwxr-xr-x   1 root root   4096 Oct 23 21:56 .
+drwxr-xr-x   1 root root    122 Oct 23 21:52 ..
+-rw-r--r--   1 root root     29 Oct 23 21:54 .created
+drwxr-xr-x   1 root root    165 Oct 23 21:55 .git
+-rw-r--r--   1 root root     66 Oct 23 21:54 .gitattributes
+-rw-r--r--   1 root root    745 Oct 23 21:54 .gitignore
+-rw-r--r--   1 root root   7132 Oct 23 21:55 FEATURES_SUMMARY.md
+-rw-r--r--   1 root root   5246 Oct 23 21:55 README.md
+-rw-r--r--   1 root root   5163 Oct 23 21:55 SETUP_INSTRUCTIONS.md
+-rw-r--r--   1 root root 579355 Oct 23 21:52 Screenshot (46).png
+-rw-r--r--   1 root root  39919 Oct 22 03:17 ai-employee-creator.html
+-rw-r--r--   1 root root    763 Oct 22 04:34 eslint.config.js
+-rw-r--r--   1 root root    364 Oct 22 04:34 index.html
+drwxr-xr-x 145 root root   4096 Oct 22 04:56 node_modules
+drwxr-xr-x   1 root root   4096 Oct 23 21:56 outputs
+-rw-r--r--   1 root root 111075 Oct 22 04:56 package-lock.json
+-rw-r--r--   1 root root    743 Oct 23 21:55 package.json
+drwxr-xr-x   2 root root     30 Oct 23 21:54 public
+drwxr-xr-x   3 root root    107 Oct 23 21:54 src
+drwxr-xr-x   2 root root     63 Oct 22 05:29 summarized_conversations
+-rw-r--r--   1 root root    161 Oct 22 04:34 vite.config.js

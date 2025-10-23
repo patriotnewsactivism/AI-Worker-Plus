@@ -1,0 +1,5 @@
+From https://github.com/patriotnewsactivism/AI-Worker-Plus
+ * branch            main       -> FETCH_HEAD
+Auto-merging .gitignore
+CONFLICT (add/add): Merge conflict in .gitignore
+Automatic merge failed; fix conflicts and then commit the result.
