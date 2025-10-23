@@ -1,2 +1,0 @@
-To https://github.com/patriotnewsactivism/AI-Worker-Plus.git
-   fdd333d..2dab66e  main -> main

@@ -1,3 +1,0 @@
-[main 2dab66e] Add comprehensive setup instructions
- 1 file changed, 179 insertions(+)
- create mode 100644 ai-employee-app/SETUP_INSTRUCTIONS.md
