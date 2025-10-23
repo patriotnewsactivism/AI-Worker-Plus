@@ -2,14 +2,14 @@
 
 **Advanced AI Employee Creator with Voice Commands, Long Tasks & Cloud Sync**
 
-AI Worker Plus is a cutting-edge React application that transforms a basic HTML AI employee creator into a sophisticated, modern AI assistant platform with voice activation, long-running tasks, and cloud synchronization capabilities.
+AI Worker Plus is a cutting-edge React application that creates specialized AI employees for various tasks. With instant voice-activated commands, long-running task processing, memory assistance, and cloud synchronization, it provides a comprehensive AI employee solution.
 
 ## 🌟 Key Features
 
 ### Voice-Activated AI Assistant
-- **Always Listening**: Click the microphone to enable voice commands
-- **Name-Based Activation**: AI only responds when addressed by name
-- **Hands-Free Operation**: Perfect for multitasking environments
+- **Instant Recognition**: AI responds immediately when it hears its name
+- **Real-Time Processing**: Uses interim transcript results for faster response
+- **Always Listening**: Click the microphone to enable continuous voice commands
 - **Visual Feedback**: Clear indicators for listening and processing states
 
 ### Long-Running Task System
@@ -67,7 +67,7 @@ npm run preview
 - Copy your API key
 
 ### 2. Configure Your AI Employee
-- Click the settings icon (⚙️) in the top-right
+- Click the settings icon (⚙️) in the bottom-right
 - Enter your Gemini API key
 - Set your preferred AI name for voice commands
 - Customize skills for your Developer AI
@@ -118,9 +118,7 @@ AI-Worker-Plus/
 ├── public/              # Static assets
 ├── package.json         # Dependencies and scripts
 ├── vite.config.js       # Build configuration
-├── README.md           # Documentation
-├── SETUP_INSTRUCTIONS.md # Comprehensive setup guide
-└── FEATURES_SUMMARY.md  # Detailed features overview
+└── README.md           # Documentation
 ```
 
 ## 🔒 Security & Privacy
