@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Mic, MicOff, Play, Square, Settings, Bot, Calendar, FileText, BarChart3, Lightbulb, Code, Clock, User, Brain, Coffee, Zap, Target, Rocket } from 'lucide-react';
+import { Send, Mic, MicOff, Play, Square, Settings, Bot, Calendar, FileText, BarChart3, Lightbulb, Code, Clock, User, Brain, Coffee, Zap, Target, Rocket, Save, Globe, Volume2 } from 'lucide-react';
 import { marked } from 'marked';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { Toaster, toast } from 'react-hot-toast';
@@ -15,12 +15,20 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [apiKey, setApiKey] = useState('');
   
+  // Advanced customization
+  const [personality, setPersonality] = useState('Professional');
+  const [responseStyle, setResponseStyle] = useState('Detailed');
+  const [temperature, setTemperature] = useState(0.7);
+  const [maxTokens, setMaxTokens] = useState(500);
+  const [selectedVoice, setSelectedVoice] = useState('default');
+  const [selectedLanguage, setSelectedLanguage] = useState('en-US');
+  
   // Chat state
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'ai',
-      content: `👋 Hello! I'm your AI employee.\n\n🎯 Just say my name ("${aiName}") followed by your request and I'll respond instantly!\n\n💻 Try the "Developer" template for coding help or "Long Task" for extended processing.`,
+      content: `\uD83D\uDC4B Hello! I'm your AI employee.\n\n\uD83C\uDFAF Just say my name ("${aiName}") followed by your request and I'll respond instantly!\n\n\uD83D\uDCBB Try the "Developer" template for coding help or "Long Task" for extended processing.`,
       timestamp: new Date().toLocaleTimeString()
     }
   ]);
@@ -101,7 +109,7 @@ function App() {
           
           // Reset transcript for next command
           resetTranscript();
-          toast.success(`🎤 Command received: "${command}"`);
+          toast.success(`\uD83C\uDFA4 Command received: "${command}"`);
         }
       }
     }
@@ -126,7 +134,7 @@ function App() {
           
           // Reset transcript for next command
           resetTranscript();
-          toast.success(`🎤 Command received: "${command}"`);
+          toast.success(`\uD83C\uDFA4 Command received: "${command}"`);
         }
       }
     }
@@ -160,10 +168,16 @@ function App() {
       selectedTemplate,
       customPrompt,
       skills,
-      apiKey
+      apiKey,
+      personality,
+      responseStyle,
+      temperature,
+      maxTokens,
+      selectedVoice,
+      selectedLanguage
     };
     localStorage.setItem('aiEmployeeConfig', JSON.stringify(config));
-  }, [aiName, selectedTemplate, customPrompt, skills, apiKey]);
+  }, [aiName, selectedTemplate, customPrompt, skills, apiKey, personality, responseStyle, temperature, maxTokens, selectedVoice, selectedLanguage]);
   
   // Load configuration from localStorage
   useEffect(() => {
@@ -175,6 +189,12 @@ function App() {
       setCustomPrompt(config.customPrompt || '');
       setSkills(config.skills || ['React', 'JavaScript', 'HTML/CSS']);
       setApiKey(config.apiKey || '');
+      setPersonality(config.personality || 'Professional');
+      setResponseStyle(config.responseStyle || 'Detailed');
+      setTemperature(config.temperature || 0.7);
+      setMaxTokens(config.maxTokens || 500);
+      setSelectedVoice(config.selectedVoice || 'default');
+      setSelectedLanguage(config.selectedLanguage || 'en-US');
     }
   }, []);
   
@@ -204,30 +224,34 @@ function App() {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Generate AI response based on template
+      // Generate AI response based on template and settings
       let aiResponse = '';
+      
+      // Add personality and style to the response
+      const personalityPrefix = getPersonalityPrefix(personality);
+      const responseStylePrefix = getResponseStylePrefix(responseStyle);
       
       switch(selectedTemplate) {
         case 'Meeting':
-          aiResponse = `📅 **Meeting Planner Activated**\n\nI've prepared your meeting agenda:\n\n**Meeting Agenda**\n1. Project status review\n2. Timeline adjustments discussion\n3. Team concerns addressment\n\nWould you like me to send calendar invites or prepare materials?`;
+          aiResponse = `${personalityPrefix} ${responseStylePrefix}\n\n**Meeting Planner Activated**\n\nI've prepared your meeting agenda:\n\n**Meeting Agenda**\n1. Project status review\n2. Timeline adjustments discussion\n3. Team concerns addressment\n\nWould you like me to send calendar invites or prepare materials?`;
           break;
         case 'Summary':
-          aiResponse = `📋 **Summary Generator Activated**\n\nHere's a concise summary of your request:\n\n**Key Points**\n• Main topic clearly identified\n• Important details highlighted\n• Action items clearly defined\n\nIs there a specific aspect you'd like me to elaborate on?`;
+          aiResponse = `${personalityPrefix} ${responseStylePrefix}\n\n**Summary Generator Activated**\n\nHere's a concise summary of your request:\n\n**Key Points**\n• Main topic clearly identified\n• Important details highlighted\n• Action items clearly defined\n\nIs there a specific aspect you'd like me to elaborate on?`;
           break;
         case 'Analysis':
-          aiResponse = `📊 **Data Analyst Activated**\n\nI've analyzed the information and here are my findings:\n\n**Analysis Results**\n• Trend identification completed\n• Statistical insights generated\n• Actionable recommendations provided\n\nI can provide a detailed report or visualize this data if needed.`;
+          aiResponse = `${personalityPrefix} ${responseStylePrefix}\n\n**Data Analyst Activated**\n\nI've analyzed the information and here are my findings:\n\n**Analysis Results**\n• Trend identification completed\n• Statistical insights generated\n• Actionable recommendations provided\n\nI can provide a detailed report or visualize this data if needed.`;
           break;
         case 'Creative':
-          aiResponse = `💡 **Creative Brain Activated**\n\nHere are some innovative ideas for your project:\n\n**Brainstorming Results**\n1. 🚀 Revolutionary approach\n2. ✨ Unique solutions\n3. 🎨 Creative alternatives\n\nWhich of these resonates with you? I can develop any idea further.`;
+          aiResponse = `${personalityPrefix} ${responseStylePrefix}\n\n**Creative Brain Activated**\n\nHere are some innovative ideas for your project:\n\n**Brainstorming Results**\n1. \uD83D\uDE80 Revolutionary approach\n2. ✨ Unique solutions\n3. \uD83C\uDFA8 Creative alternatives\n\nWhich of these resonates with you? I can develop any idea further.`;
           break;
         case 'Developer':
-          aiResponse = `💻 **Developer Specialist Activated**\n\nI can help create applications and solve coding challenges.\n\n\`\`\`jsx\n// Example React component\nfunction AIWorker() {\n  return (\n    <div className="ai-worker">\n      <h1>Welcome to AI Worker Plus</h1>\n      <button onClick={handleVoiceCommand}>\n        Click for voice activation\n      </button>\n    </div>\n  );\n}\n\`\`\`\n\nWhat specific coding task would you like me to help with today?`;
+          aiResponse = `${personalityPrefix} ${responseStylePrefix}\n\n**Developer Specialist Activated**\n\nI can help create applications and solve coding challenges.\n\n\`\`\`jsx\n// Example React component\nfunction AIWorker() {\n  return (\n    <div className="ai-worker">\n      <h1>Welcome to AI Worker Plus</h1>\n      <button onClick={handleVoiceCommand}>\n        Click for voice activation\n      </button>\n    </div>\n  );\n}\n\`\`\`\n\nWhat specific coding task would you like me to help with today?`;
           break;
         case 'Long Task':
-          aiResponse = `⏱️ **Long Task Processor Activated**\n\nI'm starting an extended processing task:\n\n**Task Details**\n• Processing large datasets\n• Generating detailed reports\n• Continuous background updates\n\nFeel free to continue working while I process this in the background.`;
+          aiResponse = `${personalityPrefix} ${responseStylePrefix}\n\n**Long Task Processor Activated**\n\nI'm starting an extended processing task:\n\n**Task Details**\n• Processing large datasets\n• Generating detailed reports\n• Continuous background updates\n\nFeel free to continue working while I process this in the background.`;
           break;
         default:
-          aiResponse = `👋 Hello! I'm your AI employee ready to assist with:\n\n• Providing detailed information\n• Solving problems efficiently\n• Managing tasks and schedules\n\nHow would you like me to help you today?`;
+          aiResponse = `${personalityPrefix} ${responseStylePrefix}\n\nI'm your AI employee ready to assist with:\n\n• Providing detailed information\n• Solving problems efficiently\n• Managing tasks and schedules\n\nHow would you like me to help you today?`;
       }
       
       // Add AI message
@@ -248,7 +272,7 @@ function App() {
           timestamp: new Date().toLocaleTimeString()
         };
         setMemoryBank(prev => [memoryEntry, ...prev.slice(0, 4)]);
-        toast.success('💾 Information saved to memory bank');
+        toast.success('\uD83D\uDCBE Information saved to memory bank');
       }
       
     } catch (error) {
@@ -265,14 +289,34 @@ function App() {
     }
   };
   
+  const getPersonalityPrefix = (personality) => {
+    switch(personality) {
+      case 'Friendly': return 'Hey there! 👋';
+      case 'Professional': return 'I understand. 📋';
+      case 'Humorous': return 'Great question! 😄';
+      case 'Direct': return 'Understood. ➡️';
+      default: return 'I understand. 📋';
+    }
+  };
+  
+  const getResponseStylePrefix = (style) => {
+    switch(style) {
+      case 'Concise': return 'Here\'s a concise response:';
+      case 'Detailed': return 'Here\'s a comprehensive response:';
+      case 'Technical': return 'Here\'s the technical breakdown:';
+      case 'Simple': return 'Here\'s the simple explanation:';
+      default: return 'Here\'s my response:';
+    }
+  };
+  
   const toggleListening = () => {
     if (listening) {
       SpeechRecognition.stopListening();
-      toast.success('🔇 Voice recognition stopped');
+      toast.success('\uD83D\uDD07 Voice recognition stopped');
     } else {
       resetTranscript();
-      SpeechRecognition.startListening({ continuous: true, interimResults: true });
-      toast.success(`🎤 Listening for "${aiName}"... Speak now!`);
+      SpeechRecognition.startListening({ continuous: true, interimResults: true, language: selectedLanguage });
+      toast.success(`\uD83C\uDFA4 Listening for "${aiName}"... Speak now!`);
     }
   };
   
@@ -280,11 +324,11 @@ function App() {
     if (longTaskRunning) {
       setLongTaskRunning(false);
       setLongTaskProgress(0);
-      toast.success('⏹️ Task stopped');
+      toast.success('\u23F9\uFE0F Task stopped');
     } else {
       setLongTaskRunning(true);
       setLongTaskProgress(0);
-      toast.success('▶️ Long task started');
+      toast.success('\u25B6\uFE0F Long task started');
     }
   };
   
@@ -298,7 +342,7 @@ function App() {
   
   const removeSkill = (skillToRemove) => {
     setSkills(prev => prev.filter(skill => skill !== skillToRemove));
-    toast.success('🗑️ Skill removed');
+    toast.success('♻️ Skill removed');
   };
   
   const renderMessage = (message) => {
@@ -396,6 +440,106 @@ function App() {
             </div>
             
             <div className="api-key-section">
+              <label>🎭 Personality</label>
+              <select
+                value={personality}
+                onChange={(e) => setPersonality(e.target.value)}
+                className="input-field"
+              >
+                <option value="Professional">Professional</option>
+                <option value="Friendly">Friendly</option>
+                <option value="Humorous">Humorous</option>
+                <option value="Direct">Direct</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Choose how your AI employee should behave
+              </p>
+            </div>
+            
+            <div className="api-key-section">
+              <label>✍️ Response Style</label>
+              <select
+                value={responseStyle}
+                onChange={(e) => setResponseStyle(e.target.value)}
+                className="input-field"
+              >
+                <option value="Detailed">Detailed</option>
+                <option value="Concise">Concise</option>
+                <option value="Technical">Technical</option>
+                <option value="Simple">Simple</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Choose how detailed your AI responses should be
+              </p>
+            </div>
+            
+            <div className="api-key-section">
+              <label>🌡️ Temperature</label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={temperature}
+                onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                className="input-field"
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                {temperature} - Controls randomness (0 = focused, 1 = creative)
+              </div>
+            </div>
+            
+            <div className="api-key-section">
+              <label>📏 Max Tokens</label>
+              <input
+                type="range"
+                min="100"
+                max="2000"
+                step="100"
+                value={maxTokens}
+                onChange={(e) => setMaxTokens(parseInt(e.target.value))}
+                className="input-field"
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                {maxTokens} - Controls response length
+              </div>
+            </div>
+            
+            <div className="api-key-section">
+              <label>🗣️ Voice</label>
+              <select
+                value={selectedVoice}
+                onChange={(e) => setSelectedVoice(e.target.value)}
+                className="input-field"
+              >
+                <option value="default">Default</option>
+                <option value="alice">Alice</option>
+                <option value="bob">Bob</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Choose the voice for your AI employee
+              </p>
+            </div>
+            
+            <div className="api-key-section">
+              <label>🌐 Language</label>
+              <select
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+                className="input-field"
+              >
+                <option value="en-US">English (US)</option>
+                <option value="en-GB">English (UK)</option>
+                <option value="es-ES">Spanish</option>
+                <option value="fr-FR">French</option>
+                <option value="de-DE">German</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Select the language for voice recognition
+              </p>
+            </div>
+            
+            <div className="api-key-section">
               <label>🛠️ AI Skills</label>
               <div className="skill-input-group">
                 <input
@@ -427,6 +571,30 @@ function App() {
                 ))}
               </div>
             </div>
+            
+            <button 
+              className="save-settings-btn"
+              onClick={() => {
+                localStorage.setItem('aiEmployeeConfig', JSON.stringify({
+                  aiName,
+                  selectedTemplate,
+                  customPrompt,
+                  skills,
+                  apiKey,
+                  personality,
+                  responseStyle,
+                  temperature,
+                  maxTokens,
+                  selectedVoice,
+                  selectedLanguage
+                }));
+                setShowSettings(false);
+                toast.success('✅ Settings saved');
+              }}
+            >
+              <Save size={20} />
+              Save Settings
+            </button>
           </div>
         </div>
       )}
@@ -436,7 +604,7 @@ function App() {
         <div className="header-content">
           <div className="header-title">
             <div className="logo-circle">
-              <Bot size={28} />
+              <Bot size={32} />
             </div>
             <div>
               <h1>AI Worker Plus</h1>
@@ -446,19 +614,19 @@ function App() {
           
           <div className="header-stats">
             <div className="stat-badge">
-              <Bot size={16} />
+              <Bot size={20} />
               {stats.messages} Messages
             </div>
             <div className="stat-badge">
-              <FileText size={16} />
+              <FileText size={20} />
               {stats.words} Words
             </div>
             <div className="stat-badge">
-              <Clock size={16} />
+              <Clock size={20} />
               {stats.time} Min Session
             </div>
             <div className="stat-badge">
-              <Zap size={16} />
+              <Zap size={20} />
               {skills.length} Skills
             </div>
           </div>
@@ -470,9 +638,31 @@ function App() {
         <div className="left-panel">
           <div className="panel-card config-panel">
             <h2 className="panel-title">
-              <Settings size={20} />
+              <Settings size={24} />
               Configuration
             </h2>
+            
+            <div className="section">
+              <label>🤖 AI Assistant Name</label>
+              <input
+                type="text"
+                value={aiName}
+                onChange={(e) => setAiName(e.target.value)}
+                className="input-field"
+                placeholder="Give your AI a name"
+              />
+            </div>
+            
+            <div className="section">
+              <label>🔑 API Key</label>
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                className="input-field"
+                placeholder="Enter your API key"
+              />
+            </div>
             
             <div className="section">
               <label>📋 AI Employee Template</label>
@@ -513,16 +703,16 @@ function App() {
               <button
                 className={`voice-button ${listening ? 'listening' : ''}`}
                 onClick={toggleListening}
-                style={{ marginTop: '10px', width: '100%' }}
+                style={{ marginTop: '12px', width: '100%' }}
               >
                 {listening ? (
                   <>
-                    <MicOff size={20} style={{ marginRight: '8px' }} />
+                    <MicOff size={24} style={{ marginRight: '10px' }} />
                     Stop Listening
                   </>
                 ) : (
                   <>
-                    <Mic size={20} style={{ marginRight: '8px' }} />
+                    <Mic size={24} style={{ marginRight: '10px' }} />
                     Start Voice Commands
                   </>
                 )}
@@ -533,7 +723,7 @@ function App() {
           {/* Quick Templates */}
           <div className="panel-card">
             <h2 className="panel-title">
-              <Rocket size={20} />
+              <Rocket size={24} />
               Quick Templates
             </h2>
             
@@ -548,7 +738,7 @@ function App() {
                     }`}
                     onClick={() => setSelectedTemplate(template.name)}
                   >
-                    <Icon size={18} />
+                    <Icon size={20} />
                     <div>
                       <div className="template-name">{template.name}</div>
                       <div className="template-desc">{template.description}</div>
@@ -562,7 +752,7 @@ function App() {
           {/* Memory Bank */}
           <div className="panel-card">
             <h2 className="panel-title">
-              <Brain size={20} />
+              <Brain size={24} />
               Memory Bank
             </h2>
             
@@ -582,7 +772,7 @@ function App() {
           {/* Cloud Sync Status */}
           <div className="panel-card">
             <h2 className="panel-title">
-              <BarChart3 size={20} />
+              <BarChart3 size={24} />
               Cloud Sync
             </h2>
             
@@ -594,7 +784,7 @@ function App() {
                 </span>
               </div>
               <div className="cloud-status-item">
-                <Coffee size={16} />
+                <Coffee size={20} />
                 <span className="cloud-status-text">
                   {memoryBank.length} items
                 </span>
@@ -607,7 +797,7 @@ function App() {
         <div className="right-panel">
           <div className="panel-card">
             <h2 className="panel-title">
-              <User size={20} />
+              <User size={24} />
               AI Employee Chat
             </h2>
             
@@ -660,7 +850,7 @@ function App() {
                     onClick={() => handleSendMessage()}
                     disabled={isProcessing || !inputValue.trim()}
                   >
-                    <Send size={20} />
+                    <Send size={24} />
                   </button>
                 </div>
                 
@@ -670,7 +860,7 @@ function App() {
                       className={`voice-button ${listening ? 'listening' : ''}`}
                       onClick={toggleListening}
                     >
-                      {listening ? <MicOff size={20} /> : <Mic size={20} />}
+                      {listening ? <MicOff size={24} /> : <Mic size={24} />}
                     </button>
                   </div>
                   
@@ -679,7 +869,7 @@ function App() {
                       className={`task-button ${longTaskRunning ? 'running' : ''}`}
                       onClick={toggleLongTask}
                     >
-                      {longTaskRunning ? <Square size={20} /> : <Play size={20} />}
+                      {longTaskRunning ? <Square size={24} /> : <Play size={24} />}
                     </button>
                   </div>
                   
@@ -687,7 +877,7 @@ function App() {
                     className="settings-button"
                     onClick={() => setShowSettings(true)}
                   >
-                    <Settings size={20} />
+                    <Settings size={24} />
                   </button>
                 </div>
               </div>
