@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Mic, MicOff, Play, Square, Settings, Bot, Calendar, FileText, BarChart3, Lightbulb, Code, Clock, User, Brain, Coffee, Zap, Target, Rocket, Save, Globe, Volume2 } from 'lucide-react';
+import { Send, Mic, MicOff, Play, Square, Settings, Bot, Calendar, FileText, BarChart3, Lightbulb, Code, Clock, User, Brain, Coffee, Zap, Target, Rocket, Save, Globe, Volume2, Key } from 'lucide-react';
 import { marked } from 'marked';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { Toaster, toast } from 'react-hot-toast';
@@ -425,17 +425,18 @@ function App() {
                   className="input-field"
                   placeholder="Enter your Gemini API key"
                 />
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Get your free API key at{' '}
                 <a 
                   href="https://aistudio.google.com/apikey" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-purple-600"
+                  className="api-key-link"
                 >
-                  Google AI Studio
+                  <Key size={20} />
+                  Get API Key
                 </a>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Get your free API key from Google AI Studio
               </p>
             </div>
             
@@ -655,13 +656,24 @@ function App() {
             
             <div className="section">
               <label>🔑 API Key</label>
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="input-field"
-                placeholder="Enter your API key"
-              />
+              <div className="api-key-input-group">
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  className="input-field"
+                  placeholder="Enter your API key"
+                />
+                <a 
+                  href="https://aistudio.google.com/apikey" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="api-key-link"
+                >
+                  <Key size={20} />
+                  Get API Key
+                </a>
+              </div>
             </div>
             
             <div className="section">
