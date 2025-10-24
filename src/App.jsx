@@ -280,7 +280,7 @@ function App() {
     }
   };
   
-  // Generate AI response using real API
+  // Generate AI response using real API for all templates
   const generateAIResponse = async (input) => {
     // Personality and response style prefixes
     const personalityPrefixes = {
@@ -300,212 +300,122 @@ function App() {
     const personalityPrefix = personalityPrefixes[personality] || personalityPrefixes.Professional;
     const responseStylePrefix = responseStylePrefixes[responseStyle] || responseStylePrefixes.Detailed;
     
-    // Template-specific responses with real API integration
-    switch (selectedTemplate) {
-      case 'Developer':
-        // Use real API for developer template
-        if (apiKey) {
-          try {
-            const prompt = `You are ${aiName}, an AI coding assistant with ${personality} personality and ${responseStyle} response style.
-            
+    // Only proceed with API call if we have an API key
+    if (!apiKey) {
+      return `${personalityPrefix} ${responseStylePrefix}
+
+I understand you're asking about "${input}". To provide you with an intelligent response, please add your Gemini API key in the settings panel. You can get a free key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+
+Once you've added your API key, I'll be able to help you with:
+• Detailed analysis of your request
+• Customized responses based on your needs
+• Intelligent assistance with complex tasks
+• Code generation and debugging help
+
+Please add your API key to unlock my full capabilities!`;
+    }
+    
+    try {
+      // Template-specific prompts with real API integration
+      let prompt;
+      
+      switch (selectedTemplate) {
+        case 'Developer':
+          prompt = `You are ${aiName}, an AI coding assistant with ${personality} personality and ${responseStyle} response style.
+          
 User request: ${input}
 Template context: Developer Specialist
 Skills: ${skills.join(', ')}
 
 Please provide code solutions, explanations, and best practices. If asked to create code, provide complete, working examples with proper comments.`;
-            
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                contents: [{
-                  parts: [{
-                    text: prompt
-                  }]
-                }],
-                generationConfig: {
-                  temperature: temperature,
-                  maxOutputTokens: maxTokens,
-                  topK: 1,
-                }
-              })
-            });
-            
-            if (response.ok) {
-              const data = await response.json();
-              return data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
-            }
-          } catch (error) {
-            console.error('API Error:', error);
-          }
-        }
-        
-        // Fallback response for developer template
-        return `${personalityPrefix} ${responseStylePrefix}
+          break;
+          
+        case 'Meeting':
+          prompt = `You are ${aiName}, an AI meeting planner with ${personality} personality and ${responseStyle} response style.
+          
+User request: ${input}
+Template context: Meeting Planner
 
-**Developer Specialist Activated**
+Please help plan meetings, create agendas, and organize schedules. Provide specific, actionable suggestions.`;
+          break;
+          
+        case 'Summary':
+          prompt = `You are ${aiName}, an AI summary generator with ${personality} personality and ${responseStyle} response style.
+          
+User request: ${input}
+Template context: Summary Generator
 
-I can help create applications and solve coding challenges.
+Please create concise, informative summaries of the content provided. Focus on key points and main ideas.`;
+          break;
+          
+        case 'Data':
+          prompt = `You are ${aiName}, an AI data analyst with ${personality} personality and ${responseStyle} response style.
+          
+User request: ${input}
+Template context: Data Analyst
 
-\`\`\`jsx
-// Example React component
-function AIWorker() {
-  return (
-    <div>
-      <h1>AI Worker Plus</h1>
-      <p>Your intelligent assistant for development tasks</p>
-    </div>
-  );
-}
-\`\`\`
+Please help analyze data, create visualizations, and generate insights. Provide specific recommendations based on the data.`;
+          break;
+          
+        case 'Creative':
+          prompt = `You are ${aiName}, an AI creative brain with ${personality} personality and ${responseStyle} response style.
+          
+User request: ${input}
+Template context: Creative Brain
 
-What specific coding task would you like me to help with?`;
-        
-      case 'Meeting':
-        return `${personalityPrefix} ${responseStylePrefix}
+Please generate innovative ideas, brainstorm solutions, and think creatively. Be imaginative and original in your responses.`;
+          break;
+          
+        case 'LongTask':
+          prompt = `You are ${aiName}, an AI task processor with ${personality} personality and ${responseStyle} response style.
+          
+User request: ${input}
+Template context: Long Task Processor
 
-**Meeting Planner Activated**
-
-📅 **Meeting Plan for**: ${input}
-
-**Suggested Agenda**:
-1. Introduction and objectives
-2. Key discussion points
-3. Action items and responsibilities
-4. Next steps and follow-up
-
-**Recommended Duration**: 30-45 minutes
-**Suggested Participants**: Relevant team members
-
-Would you like me to create a detailed meeting agenda?`;
-        
-      case 'Summary':
-        return `${personalityPrefix} ${responseStylePrefix}
-
-**Summary Generator Activated**
-
-Here's a summary of the content you mentioned:
-
----
-
-**${input.substring(0, 30)}...**
-
-This appears to be an important topic that requires summarization. A good summary should include:
-
-• Key points and main ideas
-• Important details and facts
-• Conclusions or recommendations
-• Action items if applicable
-
-Would you like me to create a more detailed summary of specific content?`;
-        
-      case 'Data':
-        return `${personalityPrefix} ${responseStylePrefix}
-
-**Data Analyst Activated**
-
-📊 **Data Analysis Request**: ${input}
-
-Based on your request, here's an analytical approach:
-
-**Key Metrics to Consider**:
-• Performance indicators
-• Trends and patterns
-• Comparative analysis
-• Statistical significance
-
-**Recommended Visualization**:
-• Bar charts for comparisons
-• Line graphs for trends
-• Pie charts for proportions
-• Scatter plots for correlations
-
-Would you like me to help analyze specific data?`;
-        
-      case 'Creative':
-        return `${personalityPrefix} ${responseStylePrefix}
-
-**Creative Brain Activated**
-
-🎨 **Creative Challenge**: ${input}
-
-Here are some innovative ideas:
-
-**Brainstorming Results**:
-1. **Concept A**: Revolutionary approach focusing on user experience
-2. **Concept B**: Technology-driven solution with AI integration
-3. **Concept C**: Community-based model with collaborative features
-
-**Next Steps**:
-• Prototype the most promising concept
-• Gather feedback from potential users
-• Refine and iterate on the design
-
-Which concept interests you most?`;
-        
-      case 'LongTask':
-        return `${personalityPrefix} ${responseStylePrefix}
-
-**Long Task Processor Activated**
-
-I'm ready to help with your long-running task: "${input}"
-
-Please click the "Start Task" button to begin processing. I'll work on this independently and provide progress updates.`;
-        
-      default:
-        // Use real API for general template
-        if (apiKey) {
-          try {
-            const prompt = `You are ${aiName}, an AI assistant with ${personality} personality and ${responseStyle} response style.
-            
+Please help with extended processing tasks. Break down complex tasks into manageable steps.`;
+          break;
+          
+        default:
+          prompt = `You are ${aiName}, an AI assistant with ${personality} personality and ${responseStyle} response style.
+          
 User request: ${input}
 Template context: ${selectedTemplate}
 Custom prompt: ${customPrompt}
 
 Please provide a helpful, intelligent response that directly addresses the user's request.`;
-            
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                contents: [{
-                  parts: [{
-                    text: prompt
-                  }]
-                }],
-                generationConfig: {
-                  temperature: temperature,
-                  maxOutputTokens: maxTokens,
-                  topK: 1,
-                }
-              })
-            });
-            
-            if (response.ok) {
-              const data = await response.json();
-              return data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
-            }
-          } catch (error) {
-            console.error('API Error:', error);
+      }
+      
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            temperature: temperature,
+            maxOutputTokens: maxTokens,
+            topK: 1,
           }
-        }
-        
-        // Simulated response as fallback
-        return `${personalityPrefix} ${responseStylePrefix}
-
-I understand you're asking about "${input}". This is an interesting topic that I can help with.
-
-Based on my analysis:
-• Key considerations have been identified
-• Multiple approaches are available
-• Implementation steps can be outlined
-• Potential challenges can be addressed
-
-How would you like me to proceed with helping you on this matter?`;
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
+      } else {
+        // Handle API errors
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        return `I encountered an error while processing your request: ${response.status} - ${response.statusText}. Please check your API key and try again.`;
+      }
+    } catch (error) {
+      console.error('API Error:', error);
+      return `I encountered an error while processing your request: ${error.message}. Please check your API key and internet connection, then try again.`;
     }
   };
   
