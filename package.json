@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@zip.js/zip.js": "^2.8.8",
     "lucide-react": "^0.546.0",
     "marked": "^16.4.1",
     "react": "^19.1.1",

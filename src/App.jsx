@@ -1,14 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Mic, MicOff, Play, Square, Settings, Bot, Calendar, FileText, BarChart3, Lightbulb, Code, Clock, User, Brain, Coffee, Zap, Target, Rocket, Save, Globe, Volume2, Key, Smartphone, Download } from 'lucide-react';
+import { Send, Mic, MicOff, Play, Square, Settings, Bot, Calendar, FileText, BarChart3, Lightbulb, Code, Clock, User, Brain, Coffee, Zap, Target, Rocket, Save, Globe, Volume2, Key, Smartphone, Download, Paperclip, Github, Users, PlayCircle, PauseCircle } from 'lucide-react';
 import { marked } from 'marked';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { Toaster, toast } from 'react-hot-toast';
 import { isPWA } from './registerSW.js';
+import FileUpload from './components/FileUpload.jsx';
+import AgentManager, { AGENT_TYPES } from './agents/AgentManager.jsx';
 import './App.css';
 
 function App() {
   // PWA Detection
   const [isInstalled, setIsInstalled] = useState(isPWA());
+  
+  // File handling state
+  const [githubConnected, setGithubConnected] = useState(false);
+  const [workspaceFiles, setWorkspaceFiles] = useState([]);
+  
+  // Multi-agent system state
+  const [agentResults, setAgentResults] = useState([]);
+  const [activeAgents, setActiveAgents] = useState(['Coordinator']);
+  
   
   // Configuration state
   const [aiName, setAiName] = useState('Assistant');
@@ -406,6 +417,35 @@ function App() {
               <Download size={16} />
               Install
             </button>
+          </div>
+        </div>
+      )}
+      
+      {/* File Upload Workspace */}
+      <div className="file-upload-workspace">
+        <FileUpload 
+          onFileProcessed={handleFileProcessed}
+          githubConnected={githubConnected}
+          onGitHubConnect={handleGitHubConnect}
+        />
+      </div>
+      
+      {/* Agent Results Panel */}
+      {agentResults.length > 0 && (
+        <div className="agent-results-panel">
+          <h3>🤖 Multi-Agent Results</h3>
+          <div className="agent-results-content">
+            {agentResults.map((result, index) => (
+              <div key={index} className="agent-result-item">
+                <div className="agent-result-header">
+                  <span className="agent-name">{result.agent}</span>
+                  <span className="agent-type">{result.type}</span>
+                </div>
+                <div className="agent-result-content">
+                  {result.result}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

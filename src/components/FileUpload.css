@@ -1,0 +1,218 @@
+/* File Upload Workspace Styles */
+.file-upload-workspace {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 999;
+}
+
+.file-upload-container {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(56, 64, 82, 0.7);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 350px;
+}
+
+.file-upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.file-upload-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.github-connect-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.github-connect-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+}
+
+.github-connect-btn:disabled {
+  background: var(--dark-card);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.file-drop-zone {
+  border: 2px dashed rgba(139, 92, 246, 0.5);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.file-drop-zone:hover,
+.file-drop-zone.drag-active {
+  border-color: var(--primary);
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.file-drop-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-drop-content p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.browse-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.browse-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+}
+
+.processing-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 8px;
+  color: var(--text-primary);
+}
+
+.processing-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  border-top: 2px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.uploaded-files-list {
+  margin-top: 16px;
+}
+
+.uploaded-files-list h4 {
+  margin: 0 0 12px 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.files-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 8px;
+  border: 1px solid var(--dark-border);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.file-details {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.file-name {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.file-size {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.remove-file-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.remove-file-btn:hover {
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .file-upload-workspace {
+    bottom: 80px;
+    left: 10px;
+    right: 10px;
+    max-width: calc(100% - 20px);
+  }
+  
+  .file-upload-container {
+    max-width: 100%;
+  }
+  
+  .files-grid {
+    max-height: 150px;
+  }
+}
