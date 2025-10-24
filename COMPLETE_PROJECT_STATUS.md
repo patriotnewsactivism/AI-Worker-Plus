@@ -4,7 +4,7 @@
 
 ### Critical Fixes Applied
 1. **API Endpoint Fix**: 
-   - Updated from `v1beta/models/gemini-pro` to `v1/models/gemini-1.5-flash`
+   - Updated from `v1beta/models/gemini-pro` to `v1beta/models/gemini-2.0-flash`
    - Resolved HTTP Error "models/gemini-pro is not found for API version v1beta"
    - All source files now use correct API endpoints
 
