@@ -1,4 +1,8 @@
+const fs = require('fs');
+const path = require('path');
 
+// Create a simple test HTML file that loads the React app
+const testHtml = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,3 +22,7 @@
     </script>
 </body>
 </html>
+`;
+
+fs.writeFileSync('test-react.html', testHtml);
+console.log('Created test-react.html');
