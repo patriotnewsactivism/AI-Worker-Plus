@@ -447,7 +447,7 @@ function App() {
     try {
       console.log('Making REAL API call to Gemini...', { apiKey: apiKey.substring(0, 10) + '...', promptLength: prompt.length });
       
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

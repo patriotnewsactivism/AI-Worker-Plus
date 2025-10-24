@@ -8,8 +8,8 @@ HTTP Error: models/gemini-pro is not found for API version v1beta, or is not sup
 ## ✅ **Solution Applied**
 
 ### API Endpoint Updates
-1. **Main App.jsx**: Updated from `v1beta/models/gemini-pro` to `v1/models/gemini-1.5-flash`
-2. **AgentManager.jsx**: Updated from `v1beta/models/gemini-pro` to `v1/models/gemini-1.5-flash`
+1. **Main App.jsx**: Updated from `v1beta/models/gemini-pro` to `v1beta/models/gemini-2.0-flash`
+2. **AgentManager.jsx**: Updated from `v1beta/models/gemini-pro` to `v1beta/models/gemini-2.0-flash`
 
 ### Configuration Fixes
 - Removed duplicate `maxOutputTokens` in generationConfig
@@ -20,7 +20,7 @@ HTTP Error: models/gemini-pro is not found for API version v1beta, or is not sup
 ### Before (Broken)
 ```javascript
 // OLD - BROKEN
-const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
   // ...
   generationConfig: {
     temperature: temperature,
