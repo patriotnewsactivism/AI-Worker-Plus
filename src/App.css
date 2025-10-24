@@ -1,3 +1,5 @@
+@import url("./components/FileUpload.css");
+
 * {
   margin: 0;
   padding: 0;
@@ -1219,8 +1221,6 @@ select.input-field {
 .app-container:has(.pwa-install-banner) .main-panel {
   margin-top: 80px;
 }
-@import url("./components/FileUpload.css");
-
 /* Agent Results Panel Styles */
 .agent-results-panel {
   position: fixed;
