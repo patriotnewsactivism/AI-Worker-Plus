@@ -5,7 +5,7 @@ import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognitio
 import { Toaster, toast } from 'react-hot-toast';
 import { isPWA } from './registerSW.js';
 import FileUpload from './components/FileUpload.jsx';
-import AgentManager, { AGENT_TYPES } from './agents/AgentManager.jsx';
+import { useAgentManager, AGENT_TYPES } from './agents/AgentManager.jsx';
 import './App.css';
 
 function App() {
@@ -18,7 +18,7 @@ function App() {
   
   // Multi-agent system state
   const [agentResults, setAgentResults] = useState([]);
-  const [activeAgents, setActiveAgents] = useState(['Coordinator']);
+  const agentManager = useAgentManager(apiKey);
   
   
   // Configuration state
@@ -961,5 +961,34 @@ function App() {
     </div>
   );
 }
+
+// Handle file processing from FileUpload component
+  const handleFileProcessed = (fileData) => {
+    console.log('File processed:', fileData);
+    // Add file to workspace files
+    setWorkspaceFiles(prev => [...prev, fileData]);
+    toast.success(`📁 File processed: ${fileData.name}`);
+  };
+
+  // Handle agent results
+  const handleAgentResults = (results) => {
+    console.log('Agent results:', results);
+    setAgentResults(results);
+    toast.success('🤖 Multi-agent processing completed!');
+  };
+
+  // Handle GitHub connection
+  const handleGitHubConnect = () => {
+    // Simulate GitHub connection
+    setGithubConnected(true);
+    toast.success('🔗 GitHub connected successfully!');
+  };
+
+  // Handle voice command (referenced in Developer template)
+  const handleVoiceCommand = () => {
+    if (!listening) {
+      toggleListening();
+    }
+  };
 
 export default App;

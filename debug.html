@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test</title>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div id="root">
+        <h1>Debug Test Page</h1>
+        <p>If you can see this, the root element is working.</p>
+    </div>
+    
+    <script>
+        console.log('Debug script loaded');
+        console.log('Root element:', document.getElementById('root'));
+        
+        // Check if React is loaded
+        setTimeout(() => {
+            if (typeof React === 'undefined') {
+                console.error('React is not loaded');
+                document.body.innerHTML += '<p style="color: red;">React is not loaded</p>';
+            } else {
+                console.log('React is loaded');
+                document.body.innerHTML += '<p style="color: green;">React is loaded</p>';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

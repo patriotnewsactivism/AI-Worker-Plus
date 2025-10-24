@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Test</title>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div id="root">
+        <h1>Testing React Loading...</h1>
+        <p>If you see this text, React hasn't loaded yet.</p>
+    </div>
+    
+    <script>
+        // Check if React is loaded
+        const checkReact = () => {
+            if (typeof React !== 'undefined' && typeof ReactDOM !== 'undefined') {
+                console.log('React and ReactDOM are loaded');
+                document.body.innerHTML += '<p style="color: green;">React is loaded successfully!</p>';
+            } else {
+                console.log('React or ReactDOM not loaded yet');
+                setTimeout(checkReact, 1000);
+            }
+        };
+        
+        // Start checking
+        checkReact();
+    </script>
+</body>
+</html>
