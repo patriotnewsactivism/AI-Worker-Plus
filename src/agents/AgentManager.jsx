@@ -146,25 +146,27 @@ class AIWorkerAgent {
   }
 }
 
-// Agent Manager component
-const AgentManager = ({ apiKey, onAgentResults }) => {
+// Agent Manager hook
+export const useAgentManager = (apiKey) => {
   const [agents, setAgents] = useState([]);
   const [activeAgents, setActiveAgents] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Initialize default agents
   useEffect(() => {
-    const defaultAgents = [
-      new AIWorkerAgent(AGENT_TYPES.COORDINATOR, 'Coordinator', ['task coordination', 'result synthesis'], apiKey),
-      new AIWorkerAgent(AGENT_TYPES.RESEARCHER, 'Researcher', ['information gathering', 'source verification'], apiKey),
-      new AIWorkerAgent(AGENT_TYPES.DEVELOPER, 'Developer', ['coding', 'software solutions'], apiKey),
-      new AIWorkerAgent(AGENT_TYPES.ANALYST, 'Analyst', ['data processing', 'insights generation'], apiKey),
-      new AIWorkerAgent(AGENT_TYPES.CREATIVE, 'Creative', ['ideation', 'brainstorming'], apiKey),
-      new AIWorkerAgent(AGENT_TYPES.PLANNER, 'Planner', ['organization', 'scheduling'], apiKey),
-      new AIWorkerAgent(AGENT_TYPES.SPECIALIST, 'Specialist', ['domain expertise', 'advanced solutions'], apiKey)
-    ];
-    
-    setAgents(defaultAgents);
+    if (apiKey) {
+      const defaultAgents = [
+        new AIWorkerAgent(AGENT_TYPES.COORDINATOR, 'Coordinator', ['task coordination', 'result synthesis'], apiKey),
+        new AIWorkerAgent(AGENT_TYPES.RESEARCHER, 'Researcher', ['information gathering', 'source verification'], apiKey),
+        new AIWorkerAgent(AGENT_TYPES.DEVELOPER, 'Developer', ['coding', 'software solutions'], apiKey),
+        new AIWorkerAgent(AGENT_TYPES.ANALYST, 'Analyst', ['data processing', 'insights generation'], apiKey),
+        new AIWorkerAgent(AGENT_TYPES.CREATIVE, 'Creative', ['ideation', 'brainstorming'], apiKey),
+        new AIWorkerAgent(AGENT_TYPES.PLANNER, 'Planner', ['organization', 'scheduling'], apiKey),
+        new AIWorkerAgent(AGENT_TYPES.SPECIALIST, 'Specialist', ['domain expertise', 'advanced solutions'], apiKey)
+      ];
+      
+      setAgents(defaultAgents);
+    }
   }, [apiKey]);
 
   // Add a new agent
@@ -215,9 +217,6 @@ const AgentManager = ({ apiKey, onAgentResults }) => {
       // Wait for all agents to complete
       const results = await Promise.all(agentPromises);
       
-      // Notify parent component of results
-      onAgentResults(results);
-      
       return results;
     } finally {
       setIsProcessing(false);
@@ -253,5 +252,4 @@ const AgentManager = ({ apiKey, onAgentResults }) => {
   };
 };
 
-export default AgentManager;
 export { AGENT_TYPES, AIWorkerAgent };
