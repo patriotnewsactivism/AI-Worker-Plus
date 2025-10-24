@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Mic, MicOff, Play, Square, Settings, Bot, Calendar, FileText, BarChart3, Lightbulb, Code, Clock, User, Brain, Coffee, Zap, Target, Rocket, Save, Globe, Volume2, Key } from 'lucide-react';
+import { Send, Mic, MicOff, Play, Square, Settings, Bot, Calendar, FileText, BarChart3, Lightbulb, Code, Clock, User, Brain, Coffee, Zap, Target, Rocket, Save, Globe, Volume2, Key, Smartphone, Download } from 'lucide-react';
 import { marked } from 'marked';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { Toaster, toast } from 'react-hot-toast';
+import { isPWA } from './registerSW.js';
 import './App.css';
 
 function App() {
+  // PWA Detection
+  const [isInstalled, setIsInstalled] = useState(isPWA());
+  
   // Configuration state
   const [aiName, setAiName] = useState('Assistant');
   const [selectedTemplate, setSelectedTemplate] = useState('General');
@@ -388,6 +392,23 @@ function App() {
   return (
     <div className="app-container">
       <Toaster position="top-right" />
+      
+      {/* PWA Install Banner */}
+      {!isInstalled && (
+        <div className="pwa-install-banner">
+          <div className="pwa-install-content">
+            <Smartphone size={20} />
+            <span>Install AI Worker Plus for better experience!</span>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="pwa-install-btn"
+            >
+              <Download size={16} />
+              Install
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* Settings Modal */}
       {showSettings && (

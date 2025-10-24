@@ -60,17 +60,35 @@ AI Worker Plus is an advanced AI employee creator application built with React. 
 
 ## Getting Started
 
+### Web Version
 1. Clone the repository
 2. Install dependencies with `npm install`
 3. Start the development server with `npm run dev`
 4. Access the application at the provided URL
 
+### 📱 Mobile App Installation
+
+#### Android (Chrome/Edge/Firefox)
+1. Visit the app in your mobile browser
+2. Tap ⋯ menu → "Install app"
+3. Tap "Install"
+4. App appears on your home screen!
+
+#### iPhone (Safari)
+1. Visit the app in Safari browser
+2. Tap Share → "Add to Home Screen"
+3. Tap "Add"
+4. App appears on your home screen!
+
+**📖 Full Mobile Guide**: See [MOBILE_APP_GUIDE.md](./MOBILE_APP_GUIDE.md) for detailed instructions
+
 ## Recommended Browsers
 
 For the best voice recognition experience, use:
-- Chrome
-- Edge
-- Safari
+- Chrome (Desktop & Android)
+- Edge (Desktop & Android)
+- Safari (Desktop & iOS)
+- Firefox (Desktop & Android)
 
 ## API Key Setup
 
