@@ -33,6 +33,8 @@ AI Worker Plus is an advanced AI employee creator application built with React. 
 - **Micro-interactions**: Subtle animations for all UI elements
 - **Particle Background**: Dynamic background with floating particles
 - **Responsive Layout**: Works beautifully on desktop, tablet, and mobile
+- **High Contrast Text**: All text is readable against any background
+- **Easy API Key Access**: Direct link to obtain API key from Google AI Studio
 
 ### Long-Running Task System
 - **Background Processing**: Handle extended tasks without blocking the interface
@@ -72,7 +74,7 @@ For the best voice recognition experience, use:
 
 ## API Key Setup
 
-To use the AI features, you'll need to obtain a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey) and enter it in the configuration section.
+To use the AI features, you'll need to obtain a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey). Simply click the "Get API Key" button next to the API key input field in the application.
 
 ## Usage
 
