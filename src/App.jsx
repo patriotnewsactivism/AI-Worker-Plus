@@ -32,9 +32,12 @@ function App() {
   const [personality, setPersonality] = useState('Professional');
   const [responseStyle, setResponseStyle] = useState('Detailed');
   const [temperature, setTemperature] = useState(0.7);
-  const [maxTokens, setMaxTokens] = useState(1000);
+  const [maxTokens, setMaxTokens] = useState(500);
   const [selectedVoice, setSelectedVoice] = useState('default');
   const [selectedLanguage, setSelectedLanguage] = useState('en-US');
+  
+  // Initialize agent manager after apiKey is defined
+  const agentManager = useAgentManager(apiKey);
   
   // Chat state
   const [messages, setMessages] = useState([
@@ -42,35 +45,68 @@ function App() {
       id: 1,
       type: 'ai',
       content: `👋 Hello! I'm your AI employee.\n\n🎯 Just say my name ("${aiName}") followed by your request and I'll respond instantly!\n\n⚠️ **IMPORTANT**: Please add your Gemini API key in settings to enable real AI responses. Without an API key, I cannot provide intelligent responses.`,
+      content: `👋 Hello! I'm your AI employee.
+
+🎯 Just say my name ("${aiName}") followed by your request and I'll respond instantly!
+
+💻 Try the "Developer" template for coding help or "Long Task" for extended processing.`,
       timestamp: new Date().toLocaleTimeString()
     }
   ]);
   const [inputValue, setInputValue] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const messagesEndRef = useRef(null);
-  
-  // Memory bank state
-  const [memoryBank, setMemoryBank] = useState([]);
-  
-  // Long task state
-  const [isLongTaskRunning, setIsLongTaskRunning] = useState(false);
-  const [longTaskProgress, setLongTaskProgress] = useState(0);
-  const longTaskIntervalRef = useRef(null);
   
   // Voice recognition state
   const [isListening, setIsListening] = useState(false);
-  const {
-    transcript,
-    interimTranscript,
-    finalTranscript,
-    resetTranscript,
-    listening
-  } = useSpeechRecognition();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isLongTaskRunning, setIsLongTaskRunning] = useState(false);
+  const [longTaskProgress, setLongTaskProgress] = useState(0);
+  const [memoryBank, setMemoryBank] = useState([]);
+  const [cloudSyncStatus, setCloudSyncStatus] = useState('idle');
   
-  // Initialize agent manager after apiKey is defined
-  const agentManager = useAgentManager(apiKey);
+  // Refs
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
   
-  // Load configuration from localStorage on mount
+  // Templates
+  const templates = {
+    General: {
+      icon: Bot,
+      description: 'Versatile assistant for everyday tasks',
+      color: '#8b5cf6'
+    },
+    Meeting: {
+      icon: Calendar,
+      description: 'Schedule and organize meetings',
+      color: '#0ea5e9'
+    },
+    Summary: {
+      icon: FileText,
+      description: 'Create summaries from content',
+      color: '#10b981'
+    },
+    Data: {
+      icon: BarChart3,
+      description: 'Analyze data and create reports',
+      color: '#f59e0b'
+    },
+    Creative: {
+      icon: Lightbulb,
+      description: 'Brainstorm ideas and creative solutions',
+      color: '#ec4899'
+    },
+    Developer: {
+      icon: Code,
+      description: 'Coding assistance and development',
+      color: '#06b6d4'
+    },
+    LongTask: {
+      icon: Clock,
+      description: 'Handle extended processing tasks',
+      color: '#f97316'
+    }
+  };
+  
+  // Load configuration from localStorage
   useEffect(() => {
     const savedConfig = localStorage.getItem('aiWorkerConfig');
     if (savedConfig) {
@@ -84,25 +120,16 @@ function App() {
         setPersonality(config.personality || 'Professional');
         setResponseStyle(config.responseStyle || 'Detailed');
         setTemperature(config.temperature || 0.7);
-        setMaxTokens(config.maxTokens || 1000);
+        setMaxTokens(config.maxTokens || 500);
         setSelectedVoice(config.selectedVoice || 'default');
         setSelectedLanguage(config.selectedLanguage || 'en-US');
       } catch (error) {
         console.error('Error loading config:', error);
       }
     }
-    
-    const savedMemory = localStorage.getItem('aiWorkerMemory');
-    if (savedMemory) {
-      try {
-        setMemoryBank(JSON.parse(savedMemory));
-      } catch (error) {
-        console.error('Error loading memory:', error);
-      }
-    }
   }, []);
   
-  // Save configuration to localStorage when it changes
+  // Save configuration to localStorage
   useEffect(() => {
     const config = {
       aiName,
@@ -117,16 +144,10 @@ function App() {
       selectedVoice,
       selectedLanguage
     };
-    
     localStorage.setItem('aiWorkerConfig', JSON.stringify(config));
   }, [aiName, selectedTemplate, customPrompt, skills, apiKey, personality, responseStyle, temperature, maxTokens, selectedVoice, selectedLanguage]);
   
-  // Save memory bank to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem('aiWorkerMemory', JSON.stringify(memoryBank));
-  }, [memoryBank]);
-  
-  // Scroll to bottom of messages when they change
+  // Scroll to bottom of messages
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -135,7 +156,16 @@ function App() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
   
-  // Voice recognition - handle final transcript
+  // Voice recognition
+  const {
+    transcript,
+    interimTranscript,
+    finalTranscript,
+    resetTranscript,
+    listening
+  } = useSpeechRecognition();
+  
+  // Handle voice recognition
   useEffect(() => {
     if (finalTranscript) {
       // Check if the AI name was mentioned
@@ -148,7 +178,7 @@ function App() {
     }
   }, [finalTranscript, aiName, resetTranscript]);
   
-  // Voice recognition - handle interim transcript for real-time processing
+  // Handle interim transcript for real-time processing
   useEffect(() => {
     if (interimTranscript && isListening) {
       // Check if the AI name was mentioned in interim transcript
@@ -216,11 +246,11 @@ function App() {
     };
     
     setMessages(prev => [...prev, userMessage]);
+    const userInput = inputValue;
+    setInputValue('');
     
     // Process input
-    const input = inputValue;
-    setInputValue('');
-    await processUserInput(input);
+    await processUserInput(userInput);
   };
   
   // Process user input
@@ -242,7 +272,7 @@ function App() {
         return;
       }
       
-      // Generate AI response using real API
+      // Simulate AI response
       const aiResponse = await generateAIResponse(input);
       
       // Add AI response
@@ -525,52 +555,57 @@ function App() {
     setIsLongTaskRunning(true);
     setLongTaskProgress(0);
     
-    // Add processing message
-    const processingMessage = {
-      id: Date.now(),
+    // Simulate long task with progress updates
+    const steps = [
+      'Initializing task processing...',
+      'Analyzing requirements...',
+      'Gathering resources...',
+      'Executing primary operations...',
+      'Processing intermediate results...',
+      'Validating outputs...',
+      'Finalizing results...'
+    ];
+    
+    for (let i = 0; i < steps.length; i++) {
+      // Add progress message
+      const progressMessage = {
+        id: Date.now() + i,
+        type: 'ai',
+        content: `⏳ ${steps[i]}`,
+        timestamp: new Date().toLocaleTimeString()
+      };
+      
+      setMessages(prev => [...prev, progressMessage]);
+      
+      // Update progress
+      const progress = Math.round(((i + 1) / steps.length) * 100);
+      setLongTaskProgress(progress);
+      
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+    
+    // Add final result
+    const resultMessage = {
+      id: Date.now() + steps.length,
       type: 'ai',
-      content: '⏳ Starting long task processing...',
+      content: `✅ Long task completed successfully!
+
+**Task**: ${input}
+
+**Results**:
+• All operations executed successfully
+• Results have been validated
+• Output files generated
+• Process completed within expected timeframe
+
+Is there anything specific about the results you'd like me to explain?`,
       timestamp: new Date().toLocaleTimeString()
     };
     
-    setMessages(prev => [...prev, processingMessage]);
-    
-    // Simulate long task with progress updates
-    longTaskIntervalRef.current = setInterval(() => {
-      setLongTaskProgress(prev => {
-        const newProgress = prev + 10;
-        
-        // Add progress update message
-        const progressMessage = {
-          id: Date.now(),
-          type: 'ai',
-          content: `📊 Task Progress: ${newProgress}% complete`,
-          timestamp: new Date().toLocaleTimeString()
-        };
-        
-        setMessages(prevMessages => [...prevMessages, progressMessage]);
-        
-        if (newProgress >= 100) {
-          clearInterval(longTaskIntervalRef.current);
-          setIsLongTaskRunning(false);
-          
-          // Add completion message
-          const completionMessage = {
-            id: Date.now() + 1,
-            type: 'ai',
-            content: '✅ Long task completed successfully!\n\n**Results**:\n• All processing steps completed\n• Data analyzed and organized\n• Report generated\n• Next steps recommended',
-            timestamp: new Date().toLocaleTimeString()
-          };
-          
-          setMessages(prevMessages => [...prevMessages, completionMessage]);
-          
-          // Auto-save to memory
-          saveToMemory(input, 'Long task completed with results');
-        }
-        
-        return newProgress;
-      });
-    }, 2000);
+    setMessages(prev => [...prev, resultMessage]);
+    setIsLongTaskRunning(false);
+    setLongTaskProgress(0);
   };
   
   // Process multi-agent task
@@ -615,7 +650,6 @@ function App() {
       };
       
       setMessages(prev => [...prev, summaryMessage]);
-      
     } catch (error) {
       console.error('Multi-agent processing error:', error);
       toast.error('❌ Error in multi-agent processing');
@@ -623,12 +657,79 @@ function App() {
       const errorMessage = {
         id: Date.now() + 1,
         type: 'ai',
-        content: 'Sorry, there was an error processing your multi-agent request. Please try again.',
+        content: `Error in multi-agent processing: ${error.message}`,
         timestamp: new Date().toLocaleTimeString()
       };
       
       setMessages(prev => [...prev, errorMessage]);
     }
+  };
+  
+  // Determine if content should be saved to memory
+  const shouldSaveToMemory = (input, response) => {
+    const importantKeywords = [
+      'important', 'remember', 'note', 'save', 'record', 'schedule',
+      'meeting', 'deadline', 'project', 'task', 'action item'
+    ];
+    
+    const content = (input + ' ' + response).toLowerCase();
+    return importantKeywords.some(keyword => content.includes(keyword));
+  };
+  
+  // Save to memory bank
+  const saveToMemory = (input, response) => {
+    const memoryItem = {
+      id: Date.now(),
+      content: `${input} - ${response.substring(0, 100)}...`,
+      timestamp: new Date().toLocaleString()
+    };
+    
+    setMemoryBank(prev => {
+      const newMemory = [memoryItem, ...prev].slice(0, 5); // Keep only 5 most recent items
+      return newMemory;
+    });
+    
+    toast.success('💾 Saved to memory bank');
+  };
+  
+  // Simulate cloud sync
+  const simulateCloudSync = () => {
+    setCloudSyncStatus('syncing');
+    setTimeout(() => {
+      setCloudSyncStatus('synced');
+      setTimeout(() => {
+        setCloudSyncStatus('idle');
+      }, 2000);
+    }, 1500);
+  };
+  
+  // Add new skill
+  const addSkill = () => {
+    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
+      setSkills(prev => [...prev, newSkill.trim()]);
+      setNewSkill('');
+      toast.success('✅ Skill added successfully');
+    }
+  };
+  
+  // Remove skill
+  const removeSkill = (skillToRemove) => {
+    setSkills(prev => prev.filter(skill => skill !== skillToRemove));
+    toast.success('🗑️ Skill removed');
+  };
+  
+  // Save settings and close panel
+  const saveSettings = () => {
+    toast.success('✅ Settings saved successfully');
+    setShowSettings(false);
+  };
+  
+  // Handle file processing from FileUpload component
+  const handleFileProcessed = (fileData) => {
+    console.log('File processed:', fileData);
+    // Add file to workspace files
+    setWorkspaceFiles(prev => [...prev, fileData]);
+    toast.success(`📁 File processed: ${fileData.name}`);
   };
   
   // Handle agent results
@@ -657,10 +758,6 @@ function App() {
     setIsLongTaskRunning(false);
     setLongTaskProgress(0);
     
-    if (longTaskIntervalRef.current) {
-      clearInterval(longTaskIntervalRef.current);
-    }
-    
     const stopMessage = {
       id: Date.now(),
       type: 'ai',
@@ -671,315 +768,281 @@ function App() {
     setMessages(prev => [...prev, stopMessage]);
   };
   
-  // Handle file processed
-  const handleFileProcessed = (file) => {
-    setWorkspaceFiles(prev => [...prev, file]);
-    
-    const fileMessage = {
-      id: Date.now(),
-      type: 'ai',
-      content: `📁 File processed: ${file.name}\n\nContent preview: ${file.content.substring(0, 200)}...`,
-      timestamp: new Date().toLocaleTimeString()
-    };
-    
-    setMessages(prev => [...prev, fileMessage]);
-  };
-  
-  // Determine if content should be saved to memory
-  const shouldSaveToMemory = (input, response) => {
-    // Save important information to memory bank
-    const importantKeywords = [
-      'important', 'remember', 'save', 'note', 'key point', 
-      'deadline', 'meeting', 'project', 'task', 'plan'
-    ];
-    
-    const content = `${input} ${response}`.toLowerCase();
-    return importantKeywords.some(keyword => content.includes(keyword)) || 
-           memoryBank.length < 5; // Always save first 5 items
-  };
-  
-  // Save content to memory bank
-  const saveToMemory = (input, response) => {
-    const memoryItem = {
-      id: Date.now(),
-      content: `${input}\n\nResponse: ${response}`,
-      timestamp: new Date().toLocaleString()
-    };
-    
-    setMemoryBank(prev => {
-      // Keep only the 5 most recent items
-      const updatedMemory = [memoryItem, ...prev.slice(0, 4)];
-      return updatedMemory;
-    });
-    
-    toast.success('💾 Information saved to memory bank!');
-  };
-  
-  // Simulate cloud sync
-  const simulateCloudSync = () => {
-    // In a real implementation, this would sync with a cloud service
-    console.log('Simulating cloud sync...');
-  };
-  
-  // Add a new skill
-  const addSkill = () => {
-    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
-      setSkills(prev => [...prev, newSkill.trim()]);
-      setNewSkill('');
-      toast.success('✅ Skill added successfully!');
+  // Render chat message
+  const renderMessage = (message) => {
+    if (message.type === 'ai') {
+      return (
+        <div className="message ai-message" key={message.id}>
+          <div className="message-avatar">
+            <Bot size={20} />
+          </div>
+          <div className="message-content">
+            <div dangerouslySetInnerHTML={{ __html: marked(message.content) }} />
+            <div className="message-timestamp">{message.timestamp}</div>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="message user-message" key={message.id}>
+          <div className="message-content">
+            <div>{message.content}</div>
+            <div className="message-timestamp">{message.timestamp}</div>
+          </div>
+          <div className="message-avatar">
+            <User size={20} />
+          </div>
+        </div>
+      );
     }
   };
   
-  // Remove a skill
-  const removeSkill = (skillToRemove) => {
-    setSkills(prev => prev.filter(skill => skill !== skillToRemove));
-    toast.success('🗑️ Skill removed!');
+  // Get cloud sync status icon
+  const getCloudSyncIcon = () => {
+    switch (cloudSyncStatus) {
+      case 'syncing':
+        return '🔄';
+      case 'synced':
+        return '✅';
+      default:
+        return '☁️';
+    }
   };
-  
-  // Save settings and close panel
-  const saveSettings = () => {
-    setShowSettings(false);
-    toast.success('💾 Settings saved successfully!');
-  };
-  
-  // Render message content with markdown
-  const renderMessageContent = (content) => {
-    return { __html: marked(content) };
-  };
-  
-  // Template options
-  const templateOptions = [
-    { id: 'General', name: 'General Assistant', icon: Bot, color: 'blue' },
-    { id: 'Meeting', name: 'Meeting Planner', icon: Calendar, color: 'green' },
-    { id: 'Summary', name: 'Summary Generator', icon: FileText, color: 'purple' },
-    { id: 'Data', name: 'Data Analyst', icon: BarChart3, color: 'red' },
-    { id: 'Creative', name: 'Creative Brain', icon: Lightbulb, color: 'yellow' },
-    { id: 'Developer', name: 'Developer Specialist', icon: Code, color: 'indigo' },
-    { id: 'LongTask', name: 'Long Task Processor', icon: Clock, color: 'pink' }
-  ];
   
   return (
     <div className="app">
       <Toaster position="top-right" />
       
       {/* Header */}
-      <header className="app-header">
+      <header className="header">
         <div className="header-content">
-          <div className="logo-container">
-            <div className="logo">
-              <Brain size={24} />
-            </div>
+          <div className="header-logo">
+            <Brain className="logo-icon" size={24} />
             <h1>AI Worker <span className="plus">Plus</span></h1>
           </div>
           
           <div className="header-controls">
-            <button 
-              className={`mic-button ${isListening ? 'listening' : ''}`}
-              onClick={toggleListening}
-              disabled={!SpeechRecognition.browserSupportsSpeechRecognition()}
-            >
-              {isListening ? <MicOff size={20} /> : <Mic size={20} />}
-            </button>
+            <div className={`cloud-status ${cloudSyncStatus}`} title={`Cloud status: ${cloudSyncStatus}`}>
+              {getCloudSyncIcon()}
+            </div>
             
             <button 
-              className="settings-button"
+              className="settings-btn"
               onClick={() => setShowSettings(true)}
+              title="Settings"
             >
               <Settings size={20} />
             </button>
           </div>
         </div>
       </header>
-      
-      <div className="app-container">
-        {/* Main Content */}
-        <main className="main-content">
-          {/* Chat Container */}
-          <div className="chat-container">
-            <div className="messages-container">
-              {messages.map((message) => (
-                <div key={message.id} className={`message ${message.type}`}>
-                  <div className="message-content">
-                    <div 
-                      className="message-text"
-                      dangerouslySetInnerHTML={renderMessageContent(message.content)}
-                    />
-                    <div className="message-timestamp">{message.timestamp}</div>
-                  </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-            
-            {/* Input Area */}
-            <div className="input-container">
-              {isLongTaskRunning && (
-                <div className="long-task-progress">
-                  <div className="progress-info">
-                    <span>Processing long task...</span>
-                    <span>{longTaskProgress}%</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${longTaskProgress}%` }}
-                    />
-                  </div>
-                  <button 
-                    className="stop-task-button"
-                    onClick={stopLongTask}
+
+      <div className="main-container">
+        {/* Sidebar */}
+        <aside className="sidebar">
+          <div className="sidebar-section">
+            <h3><Users size={18} /> AI Templates</h3>
+            <div className="template-grid">
+              {Object.entries(templates).map(([key, template]) => {
+                const IconComponent = template.icon;
+                return (
+                  <button
+                    key={key}
+                    className={`template-btn ${selectedTemplate === key ? 'active' : ''}`}
+                    onClick={() => setSelectedTemplate(key)}
+                    style={{ '--template-color': template.color }}
                   >
-                    <Square size={16} />
-                    Stop Task
+                    <IconComponent size={20} />
+                    <span>{key}</span>
+                    <small>{template.description}</small>
                   </button>
-                </div>
-              )}
-              
-              <form onSubmit={handleSubmit} className="input-form">
-                <div className="input-wrapper">
-                  <input
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder={`Message ${aiName}...`}
-                    disabled={isProcessing || isLongTaskRunning}
-                    className="message-input"
-                  />
-                  <button 
-                    type="submit" 
-                    disabled={isProcessing || isLongTaskRunning || !inputValue.trim()}
-                    className="send-button"
-                  >
-                    {isProcessing ? (
-                      <div className="spinner" />
-                    ) : (
-                      <Send size={20} />
-                    )}
-                  </button>
-                </div>
-              </form>
-              
-              <div className="voice-indicator">
-                {isListening && (
-                  <div className="listening-status">
-                    <Mic size={16} />
-                    <span>Listening for "{aiName}"...</span>
-                  </div>
-                )}
-                {transcript && (
-                  <div className="transcript-preview">
-                    {transcript}
-                  </div>
-                )}
-              </div>
+                );
+              })}
             </div>
           </div>
-          
-          {/* Sidebar */}
-          <aside className="sidebar">
-            {/* Template Selection */}
+
+          {/* Memory Bank */}
+          {memoryBank.length > 0 && (
             <div className="sidebar-section">
-              <h3><User size={18} /> Templates</h3>
-              <div className="template-grid">
-                {templateOptions.map((template) => {
-                  const IconComponent = template.icon;
-                  return (
-                    <button
-                      key={template.id}
-                      className={`template-button ${selectedTemplate === template.id ? 'selected' : ''}`}
-                      onClick={() => setSelectedTemplate(template.id)}
-                    >
-                      <IconComponent size={20} />
-                      <span>{template.name}</span>
-                    </button>
-                  );
-                })}
+              <h3><Coffee size={18} /> Memory Bank</h3>
+              <div className="memory-bank">
+                {memoryBank.map(item => (
+                  <div key={item.id} className="memory-item">
+                    <div className="memory-content">{item.content}</div>
+                    <div className="memory-timestamp">{item.timestamp}</div>
+                  </div>
+                ))}
               </div>
             </div>
-            
-            {/* Memory Bank */}
-            {memoryBank.length > 0 && (
-              <div className="sidebar-section">
-                <h3><Brain size={18} /> Memory Bank</h3>
-                <div className="memory-bank">
-                  {memoryBank.map((item) => (
-                    <div key={item.id} className="memory-item">
-                      <div className="memory-content">
-                        {item.content.substring(0, 100)}...
-                      </div>
-                      <div className="memory-timestamp">
-                        {item.timestamp}
-                      </div>
-                    </div>
-                  ))}
+          )}
+
+          {/* File Workspace */}
+          <div className="sidebar-section">
+            <FileUpload 
+              onFileProcessed={handleFileProcessed}
+              githubConnected={githubConnected}
+              onGitHubConnect={handleGitHubConnect}
+            />
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="main-content">
+          {/* Stats Bar */}
+          <div className="stats-bar">
+            <div className="stat-item">
+              <Zap size={16} />
+              <span>{messages.length} Messages</span>
+            </div>
+            <div className="stat-item">
+              <Target size={16} />
+              <span>{memoryBank.length} Memories</span>
+            </div>
+            <div className="stat-item">
+              <Rocket size={16} />
+              <span>{workspaceFiles.length} Files</span>
+            </div>
+            <div className="stat-item">
+              <Globe size={16} />
+              <span>{isInstalled ? 'Installed' : 'Web App'}</span>
+            </div>
+          </div>
+
+          {/* Chat Container */}
+          <div className="chat-container">
+            <div className="messages">
+              {messages.map(renderMessage)}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Long Task Progress */}
+            {isLongTaskRunning && (
+              <div className="long-task-progress">
+                <div className="progress-header">
+                  <span>Processing Long Task...</span>
+                  <button onClick={stopLongTask} className="stop-btn">
+                    <Square size={16} /> Stop
+                  </button>
                 </div>
+                <div className="progress-bar">
+                  <div 
+                    className="progress-fill" 
+                    style={{ width: `${longTaskProgress}%` }}
+                  ></div>
+                </div>
+                <div className="progress-text">{longTaskProgress}% Complete</div>
               </div>
             )}
-            
+
             {/* Agent Results */}
             {agentResults.length > 0 && (
-              <div className="sidebar-section">
-                <h3><Users size={18} /> Agent Results</h3>
-                <div className="agent-results">
+              <div className="agent-results">
+                <h3>🤖 Multi-Agent Results</h3>
+                <div className="results-grid">
                   {agentResults.map((result, index) => (
-                    <div key={index} className="agent-result">
-                      <div className="agent-header">
+                    <div key={index} className="result-card">
+                      <div className="result-header">
                         <span className="agent-name">{result.agent}</span>
                         <span className="agent-type">{result.type}</span>
                       </div>
-                      <div className="agent-content">
+                      <div className="result-content">
                         {result.result.substring(0, 150)}...
+                      </div>
+                      <div className="result-timestamp">
+                        {new Date(result.timestamp).toLocaleTimeString()}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
             )}
-            
-            {/* File Workspace */}
-            <div className="sidebar-section">
-              <FileUpload 
-                onFileProcessed={handleFileProcessed}
-                githubConnected={githubConnected}
-                onGitHubConnect={handleGitHubConnect}
-              />
-            </div>
-          </aside>
+
+            {/* Input Area */}
+            <form className="input-area" onSubmit={handleSubmit}>
+              <div className="input-container">
+                <button
+                  type="button"
+                  className={`mic-btn ${isListening ? 'listening' : ''}`}
+                  onClick={toggleListening}
+                  disabled={isProcessing || isLongTaskRunning}
+                  title={isListening ? "Stop listening" : "Start voice command"}
+                >
+                  {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+                </button>
+                
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder={`Message ${aiName}... (or say "${aiName}")`}
+                  disabled={isProcessing || isLongTaskRunning}
+                  className={isListening ? 'listening' : ''}
+                />
+                
+                <button
+                  type="submit"
+                  className="send-btn"
+                  disabled={!inputValue.trim() || isProcessing || isLongTaskRunning}
+                  title="Send message"
+                >
+                  <Send size={20} />
+                </button>
+              </div>
+              
+              <div className="input-footer">
+                <div className="template-indicator">
+                  <span className="template-name">{selectedTemplate}</span>
+                  <span className="ai-name">as {aiName}</span>
+                </div>
+                
+                <div className="input-status">
+                  {isProcessing && (
+                    <span className="processing">Processing...</span>
+                  )}
+                  {isListening && (
+                    <span className="listening-status">🎤 Listening for "{aiName}"</span>
+                  )}
+                </div>
+              </div>
+            </form>
+          </div>
         </main>
       </div>
-      
+
       {/* Settings Panel */}
       {showSettings && (
         <div className="settings-overlay">
           <div className="settings-panel">
             <div className="settings-header">
-              <h2>⚙️ Configuration</h2>
+              <h2><Settings size={24} /> Configuration</h2>
               <button 
-                className="close-button"
+                className="close-btn"
                 onClick={() => setShowSettings(false)}
+                title="Close settings"
               >
-                ✕
+                ×
               </button>
             </div>
             
             <div className="settings-content">
-              <div className="settings-grid">
-                {/* AI Name */}
-                <div className="setting-group">
-                  <label htmlFor="aiName">AI Name</label>
+              <div className="settings-section">
+                <h3>Basic Settings</h3>
+                
+                <div className="form-group">
+                  <label htmlFor="aiName">AI Assistant Name</label>
                   <input
                     id="aiName"
                     type="text"
                     value={aiName}
                     onChange={(e) => setAiName(e.target.value)}
-                    placeholder="Assistant"
+                    placeholder="Enter AI name"
                   />
                 </div>
                 
-                {/* API Key */}
-                <div className="setting-group">
+                <div className="form-group">
                   <label htmlFor="apiKey">
-                    API Key
+                    Gemini API Key 
                     <a 
                       href="https://aistudio.google.com/app/apikey" 
                       target="_blank" 
@@ -1001,10 +1064,13 @@ function App() {
                     ⚠️ Required for real AI responses - No simulated responses will be provided
                   </p>
                 </div>
+              </div>
+              
+              <div className="settings-section">
+                <h3>Advanced Customization</h3>
                 
-                {/* Personality */}
-                <div className="setting-group">
-                  <label htmlFor="personality">Personality</label>
+                <div className="form-group">
+                  <label htmlFor="personality">AI Personality</label>
                   <select
                     id="personality"
                     value={personality}
@@ -1017,8 +1083,7 @@ function App() {
                   </select>
                 </div>
                 
-                {/* Response Style */}
-                <div className="setting-group">
+                <div className="form-group">
                   <label htmlFor="responseStyle">Response Style</label>
                   <select
                     id="responseStyle"
@@ -1032,11 +1097,8 @@ function App() {
                   </select>
                 </div>
                 
-                {/* Temperature */}
-                <div className="setting-group">
-                  <label htmlFor="temperature">
-                    Creativity (Temperature: {temperature})
-                  </label>
+                <div className="form-group">
+                  <label htmlFor="temperature">Creativity (Temperature)</label>
                   <input
                     id="temperature"
                     type="range"
@@ -1046,18 +1108,11 @@ function App() {
                     value={temperature}
                     onChange={(e) => setTemperature(parseFloat(e.target.value))}
                   />
-                  <div className="range-labels">
-                    <span>Precise</span>
-                    <span>Balanced</span>
-                    <span>Creative</span>
-                  </div>
+                  <span className="range-value">{temperature}</span>
                 </div>
                 
-                {/* Max Tokens */}
-                <div className="setting-group">
-                  <label htmlFor="maxTokens">
-                    Response Length (Max Tokens: {maxTokens})
-                  </label>
+                <div className="form-group">
+                  <label htmlFor="maxTokens">Response Length (Max Tokens)</label>
                   <input
                     id="maxTokens"
                     type="range"
@@ -1067,13 +1122,27 @@ function App() {
                     value={maxTokens}
                     onChange={(e) => setMaxTokens(parseInt(e.target.value))}
                   />
+                  <span className="range-value">{maxTokens}</span>
                 </div>
                 
-                {/* Language */}
-                <div className="setting-group">
-                  <label htmlFor="language">Language</label>
+                <div className="form-group">
+                  <label htmlFor="selectedVoice">Voice Selection</label>
                   <select
-                    id="language"
+                    id="selectedVoice"
+                    value={selectedVoice}
+                    onChange={(e) => setSelectedVoice(e.target.value)}
+                  >
+                    <option value="default">Default</option>
+                    <option value="alice">Alice</option>
+                    <option value="bob">Bob</option>
+                    <option value="samantha">Samantha</option>
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="selectedLanguage">Language</label>
+                  <select
+                    id="selectedLanguage"
                     value={selectedLanguage}
                     onChange={(e) => setSelectedLanguage(e.target.value)}
                   >
@@ -1084,58 +1153,62 @@ function App() {
                     <option value="de-DE">German</option>
                   </select>
                 </div>
+              </div>
+              
+              <div className="settings-section">
+                <h3>Template Customization</h3>
                 
-                {/* Developer Skills */}
-                <div className="setting-group full-width">
-                  <label>Developer Skills</label>
-                  <div className="skills-manager">
-                    <div className="skills-input">
-                      <input
-                        type="text"
-                        value={newSkill}
-                        onChange={(e) => setNewSkill(e.target.value)}
-                        placeholder="Add a new skill"
-                        onKeyPress={(e) => e.key === 'Enter' && addSkill()}
-                      />
-                      <button onClick={addSkill}>Add</button>
-                    </div>
-                    <div className="skills-list">
-                      {skills.map((skill, index) => (
-                        <div key={index} className="skill-tag">
-                          {skill}
-                          <button 
-                            onClick={() => removeSkill(skill)}
-                            className="remove-skill"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                <div className="form-group">
+                  <label htmlFor="customPrompt">Custom Instructions</label>
+                  <textarea
+                    id="customPrompt"
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    placeholder="Add custom instructions for your AI assistant..."
+                    rows="3"
+                  ></textarea>
                 </div>
               </div>
               
-              <div className="settings-actions">
-                <button 
-                  className="save-button"
-                  onClick={saveSettings}
-                >
-                  <Save size={16} />
-                  Save Settings
-                </button>
+              <div className="settings-section">
+                <h3>Developer Specialist Skills</h3>
+                <div className="skills-manager">
+                  <div className="skill-input">
+                    <input
+                      type="text"
+                      value={newSkill}
+                      onChange={(e) => setNewSkill(e.target.value)}
+                      placeholder="Add a new skill"
+                    />
+                    <button onClick={addSkill} className="add-skill-btn">
+                      Add
+                    </button>
+                  </div>
+                  <div className="skills-list">
+                    {skills.map((skill, index) => (
+                      <div key={index} className="skill-tag">
+                        {skill}
+                        <button 
+                          onClick={() => removeSkill(skill)}
+                          className="remove-skill-btn"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-      
-      {/* PWA Installation Banner */}
-      {!isInstalled && (
-        <div className="pwa-banner">
-          <div className="pwa-content">
-            <Smartphone size={20} />
-            <span>Install AI Worker Plus as an app for the best experience!</span>
+            
+            <div className="settings-footer">
+              <button 
+                onClick={saveSettings}
+                className="save-btn"
+              >
+                <Save size={18} /> Save Settings
+              </button>
+            </div>
           </div>
         </div>
       )}
