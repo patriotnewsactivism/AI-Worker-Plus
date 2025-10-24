@@ -41,7 +41,7 @@ function App() {
     {
       id: 1,
       type: 'ai',
-      content: `👋 Hello! I'm your AI employee.\n\n🎯 Just say my name ("${aiName}") followed by your request and I'll respond instantly!\n\n💡 Try asking me to help with coding, research, planning, or any other task!`,
+      content: `👋 Hello! I'm your AI employee.\n\n🎯 Just say my name ("${aiName}") followed by your request and I'll respond instantly!\n\n⚠️ **IMPORTANT**: Please add your Gemini API key in settings to enable real AI responses. Without an API key, I cannot provide intelligent responses.`,
       timestamp: new Date().toLocaleTimeString()
     }
   ]);
@@ -280,110 +280,142 @@ function App() {
     }
   };
   
-  // Generate AI response using real API for all templates
+  // Generate AI response using REAL API ONLY - NO SIMULATIONS
   const generateAIResponse = async (input) => {
-    // Personality and response style prefixes
-    const personalityPrefixes = {
-      Professional: 'As a professional AI assistant',
-      Friendly: 'Hello there! As your friendly AI assistant',
-      Expert: 'As an expert in the field',
-      Concise: ''
-    };
-    
-    const responseStylePrefixes = {
-      Detailed: 'Here is a comprehensive response',
-      Concise: 'In brief',
-      Creative: 'Thinking creatively',
-      Technical: 'From a technical perspective'
-    };
-    
-    const personalityPrefix = personalityPrefixes[personality] || personalityPrefixes.Professional;
-    const responseStylePrefix = responseStylePrefixes[responseStyle] || responseStylePrefixes.Detailed;
-    
-    // Only proceed with API call if we have an API key
-    if (!apiKey) {
-      return `${personalityPrefix} ${responseStylePrefix}
+    // FORCE API KEY REQUIREMENT
+    if (!apiKey || apiKey.trim() === '') {
+      const settingsMessage = `❌ **API Key Required**
 
-I understand you're asking about "${input}". To provide you with an intelligent response, please add your Gemini API key in the settings panel. You can get a free key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+You must add a Gemini API key to use this AI assistant.
 
-Once you've added your API key, I'll be able to help you with:
-• Detailed analysis of your request
-• Customized responses based on your needs
-• Intelligent assistance with complex tasks
-• Code generation and debugging help
+**How to get your API key:**
+1. Click the settings icon (⚙️) in the top right
+2. Click the "Get API Key" link
+3. Sign in to Google AI Studio
+4. Generate a new API key
+5. Copy and paste it into the API key field
+6. Save your settings
 
-Please add your API key to unlock my full capabilities!`;
+**Why you need an API key:**
+- Enables real AI responses (not simulated)
+- Allows access to Google's Gemini AI model
+- Provides intelligent, contextual answers
+- Powers all specialized templates
+
+Please add your API key to continue. Without it, I cannot provide any responses.`;
+      
+      toast.error('⚠️ API Key Required - Click settings to add your key');
+      return settingsMessage;
     }
     
-    try {
-      // Template-specific prompts with real API integration
-      let prompt;
-      
-      switch (selectedTemplate) {
-        case 'Developer':
-          prompt = `You are ${aiName}, an AI coding assistant with ${personality} personality and ${responseStyle} response style.
-          
+    // Template-specific prompts with real API integration
+    let prompt;
+    
+    switch (selectedTemplate) {
+      case 'Developer':
+        prompt = `You are ${aiName}, an expert AI coding assistant with ${personality} personality and ${responseStyle} response style.
+        
 User request: ${input}
 Template context: Developer Specialist
 Skills: ${skills.join(', ')}
 
-Please provide code solutions, explanations, and best practices. If asked to create code, provide complete, working examples with proper comments.`;
-          break;
-          
-        case 'Meeting':
-          prompt = `You are ${aiName}, an AI meeting planner with ${personality} personality and ${responseStyle} response style.
-          
+Please provide:
+1. Complete, working code solutions
+2. Clear explanations of the code
+3. Best practices and optimizations
+4. Common pitfalls to avoid
+
+If asked to create code, provide full implementations with proper comments. Focus on modern JavaScript/React best practices.`;
+        break;
+        
+      case 'Meeting':
+        prompt = `You are ${aiName}, an expert AI meeting planner with ${personality} personality and ${responseStyle} response style.
+        
 User request: ${input}
 Template context: Meeting Planner
 
-Please help plan meetings, create agendas, and organize schedules. Provide specific, actionable suggestions.`;
-          break;
-          
-        case 'Summary':
-          prompt = `You are ${aiName}, an AI summary generator with ${personality} personality and ${responseStyle} response style.
-          
+Please provide:
+1. Detailed meeting agenda
+2. Specific time allocations
+3. Action items and responsibilities
+4. Follow-up steps
+
+Be specific and actionable in your suggestions. Consider meeting objectives and desired outcomes.`;
+        break;
+        
+      case 'Summary':
+        prompt = `You are ${aiName}, an expert AI summary generator with ${personality} personality and ${responseStyle} response style.
+        
 User request: ${input}
 Template context: Summary Generator
 
-Please create concise, informative summaries of the content provided. Focus on key points and main ideas.`;
-          break;
-          
-        case 'Data':
-          prompt = `You are ${aiName}, an AI data analyst with ${personality} personality and ${responseStyle} response style.
-          
+Please provide:
+1. Key points and main ideas
+2. Important details and facts
+3. Conclusions or recommendations
+4. Action items if applicable
+
+Focus on clarity, accuracy, and conciseness. Preserve the most important information while eliminating redundancy.`;
+        break;
+        
+      case 'Data':
+        prompt = `You are ${aiName}, an expert AI data analyst with ${personality} personality and ${responseStyle} response style.
+        
 User request: ${input}
 Template context: Data Analyst
 
-Please help analyze data, create visualizations, and generate insights. Provide specific recommendations based on the data.`;
-          break;
-          
-        case 'Creative':
-          prompt = `You are ${aiName}, an AI creative brain with ${personality} personality and ${responseStyle} response style.
-          
+Please provide:
+1. Data insights and patterns
+2. Statistical analysis
+3. Visualization recommendations
+4. Actionable conclusions
+
+Be thorough in your analysis and provide specific, data-driven recommendations.`;
+        break;
+        
+      case 'Creative':
+        prompt = `You are ${aiName}, an expert AI creative consultant with ${personality} personality and ${responseStyle} response style.
+        
 User request: ${input}
 Template context: Creative Brain
 
-Please generate innovative ideas, brainstorm solutions, and think creatively. Be imaginative and original in your responses.`;
-          break;
-          
-        case 'LongTask':
-          prompt = `You are ${aiName}, an AI task processor with ${personality} personality and ${responseStyle} response style.
-          
+Please provide:
+1. Innovative ideas and concepts
+2. Creative solutions to problems
+3. Brainstorming results
+4. Implementation suggestions
+
+Think outside the box and provide truly original, creative ideas. Be imaginative and innovative.`;
+        break;
+        
+      case 'LongTask':
+        prompt = `You are ${aiName}, an expert AI task manager with ${personality} personality and ${responseStyle} response style.
+        
 User request: ${input}
 Template context: Long Task Processor
 
-Please help with extended processing tasks. Break down complex tasks into manageable steps.`;
-          break;
-          
-        default:
-          prompt = `You are ${aiName}, an AI assistant with ${personality} personality and ${responseStyle} response style.
-          
+Please provide:
+1. Step-by-step breakdown
+2. Timeline estimates
+3. Resource requirements
+4. Milestones and deliverables
+
+Break down complex tasks into manageable, actionable steps with clear priorities.`;
+        break;
+        
+      default:
+        prompt = `You are ${aiName}, an expert AI assistant with ${personality} personality and ${responseStyle} response style.
+        
 User request: ${input}
 Template context: ${selectedTemplate}
 Custom prompt: ${customPrompt}
 
-Please provide a helpful, intelligent response that directly addresses the user's request.`;
-      }
+Please provide a helpful, intelligent response that directly addresses the user's request. Be thorough, accurate, and provide actionable advice.`;
+    }
+    
+    // Make REAL API call - NO SIMULATIONS ALLOWED
+    try {
+      console.log('Making REAL API call to Gemini...', { apiKey: apiKey.substring(0, 10) + '...', promptLength: prompt.length });
       
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
         method: 'POST',
@@ -400,22 +432,91 @@ Please provide a helpful, intelligent response that directly addresses the user'
             temperature: temperature,
             maxOutputTokens: maxTokens,
             topK: 1,
+            topP: 0.95,
+            maxOutputTokens: maxTokens
           }
         })
       });
       
+      console.log('API Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response.";
+        const result = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (result) {
+          console.log('REAL AI response received:', result.substring(0, 100) + '...');
+          return result;
+        } else {
+          console.error('No content in API response:', data);
+          return `❌ **API Response Error**
+
+The API returned no content. This could be due to:
+- Invalid API key
+- API quota exceeded
+- Temporary API issue
+
+Please check your API key and try again.`;
+        }
       } else {
-        // Handle API errors
-        const errorData = await response.json();
-        console.error('API Error:', errorData);
-        return `I encountered an error while processing your request: ${response.status} - ${response.statusText}. Please check your API key and try again.`;
+        // Handle HTTP errors
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API Error:', response.status, errorData);
+        
+        let errorMessage = `❌ **API Error (${response.status})**
+
+`;
+        
+        if (response.status === 400) {
+          errorMessage += `Bad Request - This usually means:
+• Invalid API key format
+• Invalid request parameters
+• Content policy violation
+
+Please check your API key and try again.`;
+        } else if (response.status === 401) {
+          errorMessage += `Unauthorized - Invalid API Key
+
+Your API key is not valid. Please:
+1. Get a new API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Update it in settings
+3. Try again`;
+        } else if (response.status === 403) {
+          errorMessage += `Forbidden - API Access Denied
+
+This could mean:
+• API key doesn't have access to Gemini API
+• Billing issue with your Google Cloud account
+• API quota exceeded
+
+Please check your Google Cloud Console.`;
+        } else if (response.status === 429) {
+          errorMessage += `Rate Limited - Too Many Requests
+
+You've exceeded the API rate limit. Please wait a moment and try again.
+
+Free tier limits: 60 requests per minute`;
+        } else {
+          errorMessage += `HTTP Error: ${response.statusText}
+
+${errorData.error?.message || 'Unknown error occurred'}`;
+        }
+        
+        return errorMessage;
       }
     } catch (error) {
-      console.error('API Error:', error);
-      return `I encountered an error while processing your request: ${error.message}. Please check your API key and internet connection, then try again.`;
+      console.error('Network/API Error:', error);
+      return `❌ **Connection Error**
+
+Failed to connect to the API:
+${error.message}
+
+Please check:
+• Internet connection
+• API key is correct
+• No firewall blocking the request
+
+Error details: ${error.message}`;
     }
   };
   
@@ -894,9 +995,10 @@ The agents have collaborated to provide a comprehensive response to your request
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder="Enter your Gemini API key"
+                    required
                   />
-                  <p className="setting-description">
-                    Required for intelligent responses. Get a free key from Google AI Studio.
+                  <p className="setting-description" style={{color: '#dc2626', fontWeight: 'bold'}}>
+                    ⚠️ Required for real AI responses - No simulated responses will be provided
                   </p>
                 </div>
                 
