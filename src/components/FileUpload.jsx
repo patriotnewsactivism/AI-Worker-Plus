@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { Upload, File, X, Download, FolderOpen, Github } from 'lucide-react';
+import { Upload, File, X, Download, FolderOpen, Github, GitPullRequest } from 'lucide-react';
 import * as zip from '@zip.js/zip.js';
 
-const FileUpload = ({ onFileProcessed, githubConnected, onGitHubConnect }) => {
+const FileUpload = ({ onFileProcessed, githubConnected, onGitHubConnect, onGitHubPull }) => {
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [processingStatus, setProcessingStatus] = useState('');
+  const [repoUrl, setRepoUrl] = useState('');
   const fileInputRef = useRef(null);
 
   // Handle drag events
@@ -168,6 +169,16 @@ const FileUpload = ({ onFileProcessed, githubConnected, onGitHubConnect }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const handlePullRepo = (e) => {
+    e.preventDefault();
+    if (repoUrl.trim() === '') {
+      alert('Please enter a GitHub repository URL');
+      return;
+    }
+    onGitHubPull(repoUrl);
+    setRepoUrl('');
+  };
+
   return (
     <div className="file-upload-container">
       <div className="file-upload-header">
@@ -183,6 +194,25 @@ const FileUpload = ({ onFileProcessed, githubConnected, onGitHubConnect }) => {
           </button>
         </div>
       </div>
+      
+      {githubConnected && (
+        <div className="github-pull-section">
+          <h4>📥 Pull Repository</h4>
+          <form onSubmit={handlePullRepo} className="github-pull-form">
+            <input
+              type="text"
+              value={repoUrl}
+              onChange={(e) => setRepoUrl(e.target.value)}
+              placeholder="https://github.com/user/repo.git"
+              className="github-repo-input"
+            />
+            <button type="submit" className="github-pull-btn">
+              <GitPullRequest size={16} />
+              Pull Repo
+            </button>
+          </form>
+        </div>
+      )}
       
       <div 
         className={`file-drop-zone ${dragActive ? 'drag-active' : ''}`}

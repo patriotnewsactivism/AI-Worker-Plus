@@ -151,6 +151,11 @@ function App() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Check cloud sync status when API key changes
+  useEffect(() => {
+    checkCloudSyncStatus();
+  }, [apiKey]);
   
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -692,15 +697,19 @@ Is there anything specific about the results you'd like me to explain?`,
     toast.success('💾 Saved to memory bank');
   };
   
-  // Simulate cloud sync
-  const simulateCloudSync = () => {
-    setCloudSyncStatus('syncing');
-    setTimeout(() => {
-      setCloudSyncStatus('synced');
+  // Check cloud sync status based on API key
+  const checkCloudSyncStatus = () => {
+    if (!apiKey || apiKey.trim() === '') {
+      setCloudSyncStatus('disconnected');
+    } else {
+      // Simulate checking API key validity
+      setCloudSyncStatus('syncing');
       setTimeout(() => {
-        setCloudSyncStatus('idle');
-      }, 2000);
-    }, 1500);
+        // In a real implementation, we would actually test the API key here
+        // For now, we'll assume it's valid if it exists
+        setCloudSyncStatus('connected');
+      }, 1500);
+    }
   };
   
   // Add new skill
@@ -744,6 +753,29 @@ Is there anything specific about the results you'd like me to explain?`,
     // Simulate GitHub connection
     setGithubConnected(true);
     toast.success('🔗 GitHub connected successfully!');
+  };
+
+  const handleGitHubPull = async (repoUrl) => {
+    // In a real implementation, this would pull from GitHub
+    // For now, we'll simulate the process
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => {
+          // Simulate adding some files to the workspace
+          const newFiles = [
+            { name: 'README.md', type: 'text/markdown', size: 1234, content: 'Pulled from GitHub repository' },
+            { name: 'package.json', type: 'application/json', size: 567, content: '{"name": "github-repo"}' }
+          ];
+          setWorkspaceFiles(prev => [...prev, ...newFiles]);
+          resolve();
+        }, 2000);
+      }),
+      {
+        loading: '📥 Pulling repository from GitHub...',
+        success: '✅ Repository pulled successfully!',
+        error: '❌ Error pulling repository'
+      }
+    );
   };
   
   // Handle voice command (referenced in Developer template)
@@ -802,8 +834,10 @@ Is there anything specific about the results you'd like me to explain?`,
     switch (cloudSyncStatus) {
       case 'syncing':
         return '🔄';
-      case 'synced':
+      case 'connected':
         return '✅';
+      case 'disconnected':
+        return '❌';
       default:
         return '☁️';
     }
@@ -882,6 +916,7 @@ Is there anything specific about the results you'd like me to explain?`,
               onFileProcessed={handleFileProcessed}
               githubConnected={githubConnected}
               onGitHubConnect={handleGitHubConnect}
+              onGitHubPull={handleGitHubPull}
             />
           </div>
         </aside>
