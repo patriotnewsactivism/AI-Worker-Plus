@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#0EA5E9" />
+    </linearGradient>
+    <linearGradient id="brainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EC4899" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#8B5CF6" flood-opacity="0.5" result="glowColor"/>
+      <feComposite in="glowColor" in2="blur" operator="in" result="glow"/>
+      <feBlend in="SourceGraphic" in2="glow" mode="screen"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle with gradient -->
+  <circle cx="96" cy="96" r="88" fill="url(#bgGradient)" />
+  
+  <!-- Brain-like circuit pattern -->
+  <path d="M65,55 Q80,45 96,55 T127,55" stroke="white" stroke-width="3" fill="none" />
+  <path d="M65,75 Q80,65 96,75 T127,75" stroke="white" stroke-width="3" fill="none" />
+  <path d="M65,95 Q80,85 96,95 T127,95" stroke="white" stroke-width="3" fill="none" />
+  <path d="M65,115 Q80,105 96,115 T127,115" stroke="white" stroke-width="3" fill="none" />
+  <path d="M65,135 Q80,125 96,135 T127,135" stroke="white" stroke-width="3" fill="none" />
+  
+  <!-- Connecting lines -->
+  <line x1="75" y1="55" x2="75" y2="135" stroke="white" stroke-width="2" />
+  <line x1="117" y1="55" x2="117" y2="135" stroke="white" stroke-width="2" />
+  
+  <!-- Central AI core -->
+  <circle cx="96" cy="95" r="15" fill="url(#brainGradient)" filter="url(#glow)" />
+  
+  <!-- Sparkle effects -->
+  <circle cx="96" cy="95" r="3" fill="white" />
+  <circle cx="85" cy="80" r="2" fill="white" opacity="0.8" />
+  <circle cx="107" cy="80" r="2" fill="white" opacity="0.8" />
+  <circle cx="85" cy="110" r="2" fill="white" opacity="0.8" />
+  <circle cx="107" cy="110" r="2" fill="white" opacity="0.8" />
+</svg>
