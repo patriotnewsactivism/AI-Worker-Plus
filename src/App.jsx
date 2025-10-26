@@ -18,7 +18,7 @@ import './App.css';
 // Lazy load components for better performance
 const Sidebar = lazy(() => import('./components/Sidebar.jsx'));
 const Chat = lazy(() => import('./components/Chat.jsx'));
-const Settings = lazy(() => import('./components/Settings.jsx'));
+const SettingsPanel = lazy(() => import('./components/Settings.jsx'));
 
 function App() {
   // PWA Detection
@@ -75,7 +75,6 @@ function App() {
     {
       id: 1,
       type: 'ai',
-      content: `👋 Hello! I'm your AI employee.\n\n🎯 Just say my name ("${aiName}") followed by your request and I'll respond instantly!\n\n⚠️ **IMPORTANT**: Please add your Gemini API key in settings to enable real AI responses. Without an API key, I cannot provide intelligent responses.`,
       content: `👋 Hello! I'm your AI employee.
 
 🎯 Just say my name ("${aiName}") followed by your request and I'll respond instantly!
@@ -505,11 +504,10 @@ function App() {
           }],
           generationConfig: {
             temperature: temperature,
-            maxOutputTokens: maxTokens,
             topK: 1,
             topP: 0.95,
             maxOutputTokens: maxTokens
-          }
+            }
         })
       });
       
@@ -774,56 +772,6 @@ Is there anything specific about the results you'd like me to explain?`,
   };
   
   // Handle file processing from FileUpload component
-  const handleFileProcessed = (fileData) => {
-    console.log('File processed:', fileData);
-    // Add file to workspace files
-    setWorkspaceFiles(prev => [...prev, fileData]);
-    toast.success(`📁 File processed: ${fileData.name}`);
-  };
-  
-  // Handle agent results
-  const handleAgentResults = (results) => {
-    console.log('Agent results:', results);
-    setAgentResults(results);
-    toast.success('🤖 Multi-agent processing completed!');
-  };
-  
-  // Handle GitHub connection
-  const handleGitHubConnect = () => {
-    // Simulate GitHub connection
-    setGithubConnected(true);
-    toast.success('🔗 GitHub connected successfully!');
-  };
-
-  const handleGitHubPull = async (repoUrl) => {
-    // In a real implementation, this would pull from GitHub
-    // For now, we'll simulate the process
-    toast.promise(
-      new Promise((resolve) => {
-        setTimeout(() => {
-          // Simulate adding some files to the workspace
-          const newFiles = [
-            { name: 'README.md', type: 'text/markdown', size: 1234, content: 'Pulled from GitHub repository' },
-            { name: 'package.json', type: 'application/json', size: 567, content: '{"name": "github-repo"}' }
-          ];
-          setWorkspaceFiles(prev => [...prev, ...newFiles]);
-          resolve();
-        }, 2000);
-      }),
-      {
-        loading: '📥 Pulling repository from GitHub...',
-        success: '✅ Repository pulled successfully!',
-        error: '❌ Error pulling repository'
-      }
-    );
-  };
-  
-  // Handle voice command (referenced in Developer template)
-  const handleVoiceCommand = () => {
-    if (!listening) {
-      toggleListening();
-    }
-  };
   
   // Stop long task
   const stopLongTask = () => {
@@ -1225,7 +1173,7 @@ Is there anything specific about the results you'd like me to explain?`,
 
       {/* Settings Panel */}
       <Suspense fallback={<div className="loading">Loading settings...</div>}>
-        <Settings 
+        <SettingsPanel 
           showSettings={showSettings}
           setShowSettings={setShowSettings}
           aiName={aiName}

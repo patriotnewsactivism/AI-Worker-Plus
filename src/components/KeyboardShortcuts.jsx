@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { X, Keyboard, Command, Shift, Alt, Ctrl } from 'lucide-react';
+import { X, Keyboard, Command } from 'lucide-react';
 
 const KeyboardShortcuts = memo(({ isOpen, onClose, shortcuts }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,9 +46,9 @@ const KeyboardShortcuts = memo(({ isOpen, onClose, shortcuts }) => {
       <span key={index}>
         {index > 0 && <span className="key-separator">+</span>}
         <kbd className={`key ${part}`}>
-          {part === 'ctrl' && <Ctrl size={12} />}
-          {part === 'alt' && <Alt size={12} />}
-          {part === 'shift' && <Shift size={12} />}
+          {part === 'ctrl' && <span size={12}>Ctrl</span>}
+          {part === 'alt' && <span size={12}>Alt</span>}
+          {part === 'shift' && <span size={12}>Shift</span>}
           {part === 'cmd' && <Command size={12} />}
           {!['ctrl', 'alt', 'shift', 'cmd'].includes(part) && part}
         </kbd>
