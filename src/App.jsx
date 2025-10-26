@@ -1,12 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Send, Mic, MicOff, Play, Square, Settings, Bot, Calendar, FileText, BarChart3, Lightbulb, Code, Clock, User, Brain, Coffee, Zap, Target, Rocket, Save, Globe, Volume2, Key, Smartphone, Download, Paperclip, Github, Users, PlayCircle, PauseCircle } from 'lucide-react';
-import { marked } from 'marked';
+import React, { useState, useEffect, useRef, useMemo, useCallback, memo, lazy, Suspense } from 'react';
+import { Settings, Brain, Zap, Target, Rocket, Globe } from 'lucide-react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { Toaster, toast } from 'react-hot-toast';
 import { isPWA } from './registerSW.js';
-import FileUpload from './components/FileUpload.jsx';
 import { useAgentManager, AGENT_TYPES } from './agents/AgentManager.jsx';
+import { useContextAwareAI } from './hooks/useContextAwareAI';
+import { useAuth } from './hooks/useAuth';
+import { useCloudSync } from './hooks/useCloudSync';
+import { useTheme } from './hooks/useTheme';
+import { useKeyboardShortcuts, createDefaultShortcuts } from './hooks/useKeyboardShortcuts';
+import { useAccessibility } from './hooks/useAccessibility';
+import AuthModal from './components/AuthModal';
+import ThemeToggle from './components/ThemeToggle';
+import KeyboardShortcuts from './components/KeyboardShortcuts';
 import './App.css';
+
+// Lazy load components for better performance
+const Sidebar = lazy(() => import('./components/Sidebar.jsx'));
+const Chat = lazy(() => import('./components/Chat.jsx'));
+const Settings = lazy(() => import('./components/Settings.jsx'));
 
 function App() {
   // PWA Detection
@@ -39,6 +51,25 @@ function App() {
   // Initialize agent manager after apiKey is defined
   const agentManager = useAgentManager(apiKey);
   
+  // Initialize context-aware AI
+  const contextAwareAI = useContextAwareAI(apiKey);
+  
+  // Initialize authentication
+  const { user, loading: authLoading, error: authError, signIn, signUp, signInWithGoogle, logout, resetPassword } = useAuth();
+  
+  // Initialize cloud sync
+  const cloudSync = useCloudSync(user);
+  
+  // Initialize theme system
+  const theme = useTheme();
+  
+  // Initialize accessibility
+  const accessibility = useAccessibility();
+  
+  // Authentication state
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  
   // Chat state
   const [messages, setMessages] = useState([
     {
@@ -67,8 +98,8 @@ function App() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   
-  // Templates
-  const templates = {
+  // Templates - memoized for performance
+  const templates = useMemo(() => ({
     General: {
       icon: Bot,
       description: 'Versatile assistant for everyday tasks',
@@ -104,7 +135,7 @@ function App() {
       description: 'Handle extended processing tasks',
       color: '#f97316'
     }
-  };
+  }), []);
   
   // Load configuration from localStorage
   useEffect(() => {
@@ -157,9 +188,9 @@ function App() {
     checkCloudSyncStatus();
   }, [apiKey]);
   
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
   
   // Voice recognition
   const {
@@ -197,8 +228,8 @@ function App() {
     }
   }, [interimTranscript, aiName, isListening]);
   
-  // Toggle voice listening
-  const toggleListening = () => {
+  // Toggle voice listening - memoized for performance
+  const toggleListening = useCallback(() => {
     if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
       toast.error('Browser does not support speech recognition');
       return;
@@ -212,7 +243,7 @@ function App() {
       setIsListening(true);
       toast.success(`🎤 Listening for "${aiName}"...`);
     }
-  };
+  }, [isListening, selectedLanguage, aiName]);
   
   // Handle voice input
   const handleVoiceInput = async (command) => {
@@ -258,7 +289,7 @@ function App() {
     await processUserInput(userInput);
   };
   
-  // Process user input
+  // Process user input with context-aware AI
   const processUserInput = async (input) => {
     if (!input.trim()) return;
     
@@ -277,10 +308,19 @@ function App() {
         return;
       }
       
-      // Simulate AI response
-      const aiResponse = await generateAIResponse(input);
+      // Use context-aware AI for response generation
+      const aiResponse = await contextAwareAI.generateResponse(
+        input,
+        selectedTemplate,
+        personality,
+        responseStyle,
+        temperature,
+        maxTokens,
+        customPrompt,
+        skills
+      );
       
-      // Add AI response
+      // Add AI response to messages
       const aiMessage = {
         id: Date.now() + 1,
         type: 'ai',
@@ -800,34 +840,242 @@ Is there anything specific about the results you'd like me to explain?`,
     setMessages(prev => [...prev, stopMessage]);
   };
   
-  // Render chat message
-  const renderMessage = (message) => {
-    if (message.type === 'ai') {
-      return (
-        <div className="message ai-message" key={message.id}>
-          <div className="message-avatar">
-            <Bot size={20} />
-          </div>
-          <div className="message-content">
-            <div dangerouslySetInnerHTML={{ __html: marked(message.content) }} />
-            <div className="message-timestamp">{message.timestamp}</div>
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div className="message user-message" key={message.id}>
-          <div className="message-content">
-            <div>{message.content}</div>
-            <div className="message-timestamp">{message.timestamp}</div>
-          </div>
-          <div className="message-avatar">
-            <User size={20} />
-          </div>
-        </div>
-      );
+  // Authentication handlers
+  const handleSignIn = useCallback(async (email, password) => {
+    try {
+      await signIn(email, password);
+      setShowAuthModal(false);
+      toast.success('Welcome back!');
+    } catch (error) {
+      toast.error('Sign in failed: ' + error.message);
     }
-  };
+  }, [signIn]);
+
+  const handleSignUp = useCallback(async (email, password, displayName) => {
+    try {
+      await signUp(email, password, displayName);
+      setShowAuthModal(false);
+      toast.success('Account created successfully!');
+    } catch (error) {
+      toast.error('Sign up failed: ' + error.message);
+    }
+  }, [signUp]);
+
+  const handleGoogleSignIn = useCallback(async () => {
+    try {
+      await signInWithGoogle();
+      setShowAuthModal(false);
+      toast.success('Signed in with Google!');
+    } catch (error) {
+      toast.error('Google sign in failed: ' + error.message);
+    }
+  }, [signInWithGoogle]);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout();
+      toast.success('Signed out successfully');
+    } catch (error) {
+      toast.error('Logout failed: ' + error.message);
+    }
+  }, [logout]);
+
+  const handleResetPassword = useCallback(async (email) => {
+    try {
+      await resetPassword(email);
+      toast.success('Password reset email sent!');
+    } catch (error) {
+      toast.error('Password reset failed: ' + error.message);
+    }
+  }, [resetPassword]);
+
+  // Cloud sync handlers
+  const syncToCloud = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const userData = {
+        aiName,
+        selectedTemplate,
+        customPrompt,
+        skills,
+        personality,
+        responseStyle,
+        temperature,
+        maxTokens,
+        selectedVoice,
+        selectedLanguage,
+        messages: messages.slice(-50), // Last 50 messages
+        memoryBank,
+        workspaceFiles: workspaceFiles.slice(-20) // Last 20 files
+      };
+
+      await cloudSync.syncUserData(userData);
+      toast.success('Data synced to cloud!');
+    } catch (error) {
+      console.error('Cloud sync error:', error);
+      toast.error('Cloud sync failed: ' + error.message);
+    }
+  }, [user, cloudSync, aiName, selectedTemplate, customPrompt, skills, personality, responseStyle, temperature, maxTokens, selectedVoice, selectedLanguage, messages, memoryBank, workspaceFiles]);
+
+  // Load data from cloud
+  const loadFromCloud = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const userData = await cloudSync.getUserData();
+      if (userData) {
+        // Restore user settings
+        if (userData.aiName) setAiName(userData.aiName);
+        if (userData.selectedTemplate) setSelectedTemplate(userData.selectedTemplate);
+        if (userData.customPrompt) setCustomPrompt(userData.customPrompt);
+        if (userData.skills) setSkills(userData.skills);
+        if (userData.personality) setPersonality(userData.personality);
+        if (userData.responseStyle) setResponseStyle(userData.responseStyle);
+        if (userData.temperature) setTemperature(userData.temperature);
+        if (userData.maxTokens) setMaxTokens(userData.maxTokens);
+        if (userData.selectedVoice) setSelectedVoice(userData.selectedVoice);
+        if (userData.selectedLanguage) setSelectedLanguage(userData.selectedLanguage);
+        if (userData.messages) setMessages(userData.messages);
+        if (userData.memoryBank) setMemoryBank(userData.memoryBank);
+        if (userData.workspaceFiles) setWorkspaceFiles(userData.workspaceFiles);
+        
+        toast.success('Data loaded from cloud!');
+      }
+    } catch (error) {
+      console.error('Load from cloud error:', error);
+      toast.error('Failed to load data from cloud: ' + error.message);
+    }
+  }, [user, cloudSync]);
+
+  // Auto-sync when data changes
+  useEffect(() => {
+    if (user && cloudSync.isOnline) {
+      const timeoutId = setTimeout(() => {
+        syncToCloud();
+      }, 2000); // Debounce sync
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [user, cloudSync.isOnline, syncToCloud]);
+
+  // Load data when user signs in
+  useEffect(() => {
+    if (user) {
+      loadFromCloud();
+    }
+  }, [user, loadFromCloud]);
+
+  // Apply custom theme when it changes
+  useEffect(() => {
+    if (theme.customTheme) {
+      theme.applyCustomTheme(theme.customTheme);
+    }
+  }, [theme.customTheme, theme.applyCustomTheme]);
+
+  // Keyboard shortcuts
+  const shortcuts = useMemo(() => createDefaultShortcuts({
+    showShortcuts: () => setShowShortcuts(true),
+    focusInput: () => inputRef.current?.focus(),
+    switchToGeneral: () => setSelectedTemplate('General'),
+    switchToDeveloper: () => setSelectedTemplate('Developer'),
+    switchToCreative: () => setSelectedTemplate('Creative'),
+    switchToData: () => setSelectedTemplate('Data'),
+    switchToMeeting: () => setSelectedTemplate('Meeting'),
+    switchToSummary: () => setSelectedTemplate('Summary'),
+    switchToLongTask: () => setSelectedTemplate('LongTask'),
+    sendMessage: () => {
+      if (inputValue.trim()) {
+        handleSubmit({ preventDefault: () => {} });
+      }
+    },
+    toggleVoice: toggleListening,
+    saveSettings: saveSettings,
+    openSettings: () => setShowSettings(true),
+    syncToCloud: syncToCloud,
+    loadFromCloud: loadFromCloud,
+    toggleTheme: theme.toggleTheme,
+    toggleFullscreen: () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    },
+    toggleSidebar: () => {
+      // Toggle sidebar visibility
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar) {
+        sidebar.style.display = sidebar.style.display === 'none' ? 'flex' : 'none';
+      }
+    },
+    openFile: () => {
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput) fileInput.click();
+    },
+    exportConversation: contextAwareAI.exportConversation,
+    activateMultiAgent: () => {
+      const input = inputRef.current;
+      if (input) {
+        input.value = 'multi-agent ';
+        input.focus();
+      }
+    },
+    clearConversation: () => {
+      setMessages([{
+        id: 1,
+        type: 'ai',
+        content: `👋 Hello! I'm your AI employee.\n\n🎯 Just say my name ("${aiName}") followed by your request and I'll respond instantly!\n\n💻 Try the "Developer" template for coding help or "Long Task" for extended processing.`,
+        timestamp: new Date().toLocaleTimeString()
+      }]);
+      contextAwareAI.clearAllData();
+    },
+    closeModals: () => {
+      setShowAuthModal(false);
+      setShowSettings(false);
+      setShowShortcuts(false);
+    }
+  }), [theme.toggleTheme, syncToCloud, loadFromCloud, saveSettings, toggleListening, contextAwareAI, aiName, inputValue, handleSubmit]);
+
+  useKeyboardShortcuts(shortcuts);
+
+  // Memoized handlers for performance
+  const handleFileProcessed = useCallback((fileData) => {
+    console.log('File processed:', fileData);
+    setWorkspaceFiles(prev => [...prev, fileData]);
+    toast.success(`📁 File processed: ${fileData.name}`);
+  }, []);
+
+  const handleAgentResults = useCallback((results) => {
+    console.log('Agent results:', results);
+    setAgentResults(results);
+    toast.success('🤖 Multi-agent processing completed!');
+  }, []);
+
+  const handleGitHubConnect = useCallback(() => {
+    setGithubConnected(true);
+    toast.success('🔗 GitHub connected successfully!');
+  }, []);
+
+  const handleGitHubPull = useCallback(async (repoUrl) => {
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => {
+          const newFiles = [
+            { name: 'README.md', type: 'text/markdown', size: 1234, content: 'Pulled from GitHub repository' },
+            { name: 'package.json', type: 'application/json', size: 567, content: '{"name": "github-repo"}' }
+          ];
+          setWorkspaceFiles(prev => [...prev, ...newFiles]);
+          resolve();
+        }, 2000);
+      }),
+      {
+        loading: '📥 Pulling repository from GitHub...',
+        success: '✅ Repository pulled successfully!',
+        error: '❌ Error pulling repository'
+      }
+    );
+  }, []);
   
   // Get cloud sync status icon
   const getCloudSyncIcon = () => {
@@ -856,14 +1104,60 @@ Is there anything specific about the results you'd like me to explain?`,
           </div>
           
           <div className="header-controls">
-            <div className={`cloud-status ${cloudSyncStatus}`} title={`Cloud status: ${cloudSyncStatus}`}>
-              {getCloudSyncIcon()}
+            <div className={`cloud-status ${cloudSync.syncStatus}`} title={`Cloud status: ${cloudSync.syncStatus}`}>
+              {cloudSync.isOnline ? '☁️' : '📡'}
             </div>
+            
+            <ThemeToggle 
+              theme={theme.theme}
+              toggleTheme={theme.toggleTheme}
+              setThemeMode={theme.setThemeMode}
+              customTheme={theme.customTheme}
+              createCustomTheme={theme.createCustomTheme}
+              applyCustomTheme={theme.applyCustomTheme}
+              resetTheme={theme.resetTheme}
+            />
+            
+            <button 
+              className="shortcuts-btn"
+              onClick={() => setShowShortcuts(true)}
+              title="Keyboard shortcuts (Ctrl+/)"
+            >
+              ⌨️
+            </button>
+            
+            {user ? (
+              <div className="user-controls">
+                <span className="user-name">{user.displayName || user.email}</span>
+                <button 
+                  className="sync-btn"
+                  onClick={syncToCloud}
+                  title="Sync to cloud (Ctrl+Shift+S)"
+                >
+                  🔄
+                </button>
+                <button 
+                  className="logout-btn"
+                  onClick={handleLogout}
+                  title="Sign out"
+                >
+                  🚪
+                </button>
+              </div>
+            ) : (
+              <button 
+                className="auth-btn"
+                onClick={() => setShowAuthModal(true)}
+                title="Sign in"
+              >
+                👤 Sign In
+              </button>
+            )}
             
             <button 
               className="settings-btn"
               onClick={() => setShowSettings(true)}
-              title="Settings"
+              title="Settings (Ctrl+,)"
             >
               <Settings size={20} />
             </button>
@@ -873,53 +1167,18 @@ Is there anything specific about the results you'd like me to explain?`,
 
       <div className="main-container">
         {/* Sidebar */}
-        <aside className="sidebar">
-          <div className="sidebar-section">
-            <h3><Users size={18} /> AI Templates</h3>
-            <div className="template-grid">
-              {Object.entries(templates).map(([key, template]) => {
-                const IconComponent = template.icon;
-                return (
-                  <button
-                    key={key}
-                    className={`template-btn ${selectedTemplate === key ? 'active' : ''}`}
-                    onClick={() => setSelectedTemplate(key)}
-                    style={{ '--template-color': template.color }}
-                  >
-                    <IconComponent size={20} />
-                    <span>{key}</span>
-                    <small>{template.description}</small>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Memory Bank */}
-          {memoryBank.length > 0 && (
-            <div className="sidebar-section">
-              <h3><Coffee size={18} /> Memory Bank</h3>
-              <div className="memory-bank">
-                {memoryBank.map(item => (
-                  <div key={item.id} className="memory-item">
-                    <div className="memory-content">{item.content}</div>
-                    <div className="memory-timestamp">{item.timestamp}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* File Workspace */}
-          <div className="sidebar-section">
-            <FileUpload 
-              onFileProcessed={handleFileProcessed}
-              githubConnected={githubConnected}
-              onGitHubConnect={handleGitHubConnect}
-              onGitHubPull={handleGitHubPull}
-            />
-          </div>
-        </aside>
+        <Suspense fallback={<div className="loading">Loading sidebar...</div>}>
+          <Sidebar 
+            templates={templates}
+            selectedTemplate={selectedTemplate}
+            setSelectedTemplate={setSelectedTemplate}
+            memoryBank={memoryBank}
+            onFileProcessed={handleFileProcessed}
+            githubConnected={githubConnected}
+            onGitHubConnect={handleGitHubConnect}
+            onGitHubPull={handleGitHubPull}
+          />
+        </Suspense>
 
         {/* Main Content */}
         <main className="main-content">
@@ -944,309 +1203,85 @@ Is there anything specific about the results you'd like me to explain?`,
           </div>
 
           {/* Chat Container */}
-          <div className="chat-container">
-            <div className="messages">
-              {messages.map(renderMessage)}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Long Task Progress */}
-            {isLongTaskRunning && (
-              <div className="long-task-progress">
-                <div className="progress-header">
-                  <span>Processing Long Task...</span>
-                  <button onClick={stopLongTask} className="stop-btn">
-                    <Square size={16} /> Stop
-                  </button>
-                </div>
-                <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ width: `${longTaskProgress}%` }}
-                  ></div>
-                </div>
-                <div className="progress-text">{longTaskProgress}% Complete</div>
-              </div>
-            )}
-
-            {/* Agent Results */}
-            {agentResults.length > 0 && (
-              <div className="agent-results">
-                <h3>🤖 Multi-Agent Results</h3>
-                <div className="results-grid">
-                  {agentResults.map((result, index) => (
-                    <div key={index} className="result-card">
-                      <div className="result-header">
-                        <span className="agent-name">{result.agent}</span>
-                        <span className="agent-type">{result.type}</span>
-                      </div>
-                      <div className="result-content">
-                        {result.result.substring(0, 150)}...
-                      </div>
-                      <div className="result-timestamp">
-                        {new Date(result.timestamp).toLocaleTimeString()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Input Area */}
-            <form className="input-area" onSubmit={handleSubmit}>
-              <div className="input-container">
-                <button
-                  type="button"
-                  className={`mic-btn ${isListening ? 'listening' : ''}`}
-                  onClick={toggleListening}
-                  disabled={isProcessing || isLongTaskRunning}
-                  title={isListening ? "Stop listening" : "Start voice command"}
-                >
-                  {isListening ? <MicOff size={20} /> : <Mic size={20} />}
-                </button>
-                
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder={`Message ${aiName}... (or say "${aiName}")`}
-                  disabled={isProcessing || isLongTaskRunning}
-                  className={isListening ? 'listening' : ''}
-                />
-                
-                <button
-                  type="submit"
-                  className="send-btn"
-                  disabled={!inputValue.trim() || isProcessing || isLongTaskRunning}
-                  title="Send message"
-                >
-                  <Send size={20} />
-                </button>
-              </div>
-              
-              <div className="input-footer">
-                <div className="template-indicator">
-                  <span className="template-name">{selectedTemplate}</span>
-                  <span className="ai-name">as {aiName}</span>
-                </div>
-                
-                <div className="input-status">
-                  {isProcessing && (
-                    <span className="processing">Processing...</span>
-                  )}
-                  {isListening && (
-                    <span className="listening-status">🎤 Listening for "{aiName}"</span>
-                  )}
-                </div>
-              </div>
-            </form>
-          </div>
+          <Suspense fallback={<div className="loading">Loading chat...</div>}>
+            <Chat 
+              messages={messages}
+              inputValue={inputValue}
+              setInputValue={setInputValue}
+              isListening={isListening}
+              isProcessing={isProcessing}
+              isLongTaskRunning={isLongTaskRunning}
+              longTaskProgress={longTaskProgress}
+              agentResults={agentResults}
+              aiName={aiName}
+              selectedTemplate={selectedTemplate}
+              handleSubmit={handleSubmit}
+              toggleListening={toggleListening}
+              stopLongTask={stopLongTask}
+            />
+          </Suspense>
         </main>
       </div>
 
       {/* Settings Panel */}
-      {showSettings && (
-        <div className="settings-overlay">
-          <div className="settings-panel">
-            <div className="settings-header">
-              <h2><Settings size={24} /> Configuration</h2>
-              <button 
-                className="close-btn"
-                onClick={() => setShowSettings(false)}
-                title="Close settings"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="settings-content">
-              <div className="settings-section">
-                <h3>Basic Settings</h3>
-                
-                <div className="form-group">
-                  <label htmlFor="aiName">AI Assistant Name</label>
-                  <input
-                    id="aiName"
-                    type="text"
-                    value={aiName}
-                    onChange={(e) => setAiName(e.target.value)}
-                    placeholder="Enter AI name"
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="apiKey">
-                    Gemini API Key 
-                    <a 
-                      href="https://aistudio.google.com/app/apikey" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="api-key-link"
-                    >
-                      Get API Key
-                    </a>
-                  </label>
-                  <input
-                    id="apiKey"
-                    type="password"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="Enter your Gemini API key"
-                    required
-                  />
-                  <p className="setting-description" style={{color: '#dc2626', fontWeight: 'bold'}}>
-                    ⚠️ Required for real AI responses - No simulated responses will be provided
-                  </p>
-                </div>
-              </div>
-              
-              <div className="settings-section">
-                <h3>Advanced Customization</h3>
-                
-                <div className="form-group">
-                  <label htmlFor="personality">AI Personality</label>
-                  <select
-                    id="personality"
-                    value={personality}
-                    onChange={(e) => setPersonality(e.target.value)}
-                  >
-                    <option value="Professional">Professional</option>
-                    <option value="Friendly">Friendly</option>
-                    <option value="Expert">Expert</option>
-                    <option value="Concise">Concise</option>
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="responseStyle">Response Style</label>
-                  <select
-                    id="responseStyle"
-                    value={responseStyle}
-                    onChange={(e) => setResponseStyle(e.target.value)}
-                  >
-                    <option value="Detailed">Detailed</option>
-                    <option value="Concise">Concise</option>
-                    <option value="Creative">Creative</option>
-                    <option value="Technical">Technical</option>
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="temperature">Creativity (Temperature)</label>
-                  <input
-                    id="temperature"
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={temperature}
-                    onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                  />
-                  <span className="range-value">{temperature}</span>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="maxTokens">Response Length (Max Tokens)</label>
-                  <input
-                    id="maxTokens"
-                    type="range"
-                    min="100"
-                    max="2000"
-                    step="100"
-                    value={maxTokens}
-                    onChange={(e) => setMaxTokens(parseInt(e.target.value))}
-                  />
-                  <span className="range-value">{maxTokens}</span>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="selectedVoice">Voice Selection</label>
-                  <select
-                    id="selectedVoice"
-                    value={selectedVoice}
-                    onChange={(e) => setSelectedVoice(e.target.value)}
-                  >
-                    <option value="default">Default</option>
-                    <option value="alice">Alice</option>
-                    <option value="bob">Bob</option>
-                    <option value="samantha">Samantha</option>
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="selectedLanguage">Language</label>
-                  <select
-                    id="selectedLanguage"
-                    value={selectedLanguage}
-                    onChange={(e) => setSelectedLanguage(e.target.value)}
-                  >
-                    <option value="en-US">English (US)</option>
-                    <option value="en-GB">English (UK)</option>
-                    <option value="es-ES">Spanish</option>
-                    <option value="fr-FR">French</option>
-                    <option value="de-DE">German</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="settings-section">
-                <h3>Template Customization</h3>
-                
-                <div className="form-group">
-                  <label htmlFor="customPrompt">Custom Instructions</label>
-                  <textarea
-                    id="customPrompt"
-                    value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
-                    placeholder="Add custom instructions for your AI assistant..."
-                    rows="3"
-                  ></textarea>
-                </div>
-              </div>
-              
-              <div className="settings-section">
-                <h3>Developer Specialist Skills</h3>
-                <div className="skills-manager">
-                  <div className="skill-input">
-                    <input
-                      type="text"
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      placeholder="Add a new skill"
-                    />
-                    <button onClick={addSkill} className="add-skill-btn">
-                      Add
-                    </button>
-                  </div>
-                  <div className="skills-list">
-                    {skills.map((skill, index) => (
-                      <div key={index} className="skill-tag">
-                        {skill}
-                        <button 
-                          onClick={() => removeSkill(skill)}
-                          className="remove-skill-btn"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="settings-footer">
-              <button 
-                onClick={saveSettings}
-                className="save-btn"
-              >
-                <Save size={18} /> Save Settings
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Suspense fallback={<div className="loading">Loading settings...</div>}>
+        <Settings 
+          showSettings={showSettings}
+          setShowSettings={setShowSettings}
+          aiName={aiName}
+          setAiName={setAiName}
+          apiKey={apiKey}
+          setApiKey={setApiKey}
+          personality={personality}
+          setPersonality={setPersonality}
+          responseStyle={responseStyle}
+          setResponseStyle={setResponseStyle}
+          temperature={temperature}
+          setTemperature={setTemperature}
+          maxTokens={maxTokens}
+          setMaxTokens={setMaxTokens}
+          selectedVoice={selectedVoice}
+          setSelectedVoice={setSelectedVoice}
+          selectedLanguage={selectedLanguage}
+          setSelectedLanguage={setSelectedLanguage}
+          customPrompt={customPrompt}
+          setCustomPrompt={setCustomPrompt}
+          skills={skills}
+          setSkills={setSkills}
+          newSkill={newSkill}
+          setNewSkill={setNewSkill}
+          addSkill={addSkill}
+          removeSkill={removeSkill}
+          saveSettings={saveSettings}
+        />
+      </Suspense>
+
+      {/* Authentication Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSignIn={handleSignIn}
+        onSignUp={handleSignUp}
+        onGoogleSignIn={handleGoogleSignIn}
+        onResetPassword={handleResetPassword}
+        loading={authLoading}
+        error={authError}
+      />
+
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcuts
+        isOpen={showShortcuts}
+        onClose={() => setShowShortcuts(false)}
+        shortcuts={shortcuts}
+      />
+
+      {/* Accessibility Live Region */}
+      <div 
+        id="aria-live-region" 
+        aria-live="polite" 
+        aria-atomic="true"
+        style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}
+      />
     </div>
   );
 }
