@@ -147,6 +147,7 @@ class AIWorkerAgent {
 }
 
 // Agent Manager hook
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAgentManager = (apiKey) => {
   const [agents, setAgents] = useState([]);
   const [activeAgents, setActiveAgents] = useState([]);
@@ -252,4 +253,5 @@ export const useAgentManager = (apiKey) => {
   };
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { AGENT_TYPES, AIWorkerAgent };

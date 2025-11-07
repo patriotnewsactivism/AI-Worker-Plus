@@ -1,6 +1,23 @@
 import React, { memo, useRef, useEffect } from 'react';
 import { Send, Mic, MicOff, Square, Bot, User } from 'lucide-react';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+
+// Configure marked for better markdown rendering
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+  headerIds: false,
+  mangle: false
+});
+
+// Sanitize HTML to prevent XSS attacks
+const sanitizeHTML = (html) => {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'code', 'pre', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'],
+    ALLOWED_ATTR: ['href', 'target', 'rel']
+  });
+};
 
 const Chat = memo(({ 
   messages, 
@@ -33,7 +50,7 @@ const Chat = memo(({
             <Bot size={20} />
           </div>
           <div className="message-content">
-            <div dangerouslySetInnerHTML={{ __html: marked(message.content) }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(marked(message.content)) }} />
             <div className="message-timestamp">{message.timestamp}</div>
           </div>
         </div>

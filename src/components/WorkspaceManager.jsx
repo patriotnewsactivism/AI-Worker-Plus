@@ -6,18 +6,15 @@ const WorkspaceManager = memo(({
   currentWorkspace, 
   collaborators, 
   isLoading, 
-  onCreateWorkspace, 
-  onJoinWorkspace, 
-  onLeaveWorkspace, 
+  onCreateWorkspace,
+  onJoinWorkspace,
   onSetActiveWorkspace,
-  onUpdateSettings,
   onAddComment,
   onUpdateUserRole,
   onRemoveUser
 }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [newWorkspace, setNewWorkspace] = useState({
     name: '',
@@ -133,7 +130,7 @@ const WorkspaceManager = memo(({
                 className="action-btn"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowSettings(true);
+                  // TODO: Implement settings panel
                 }}
                 title="Settings"
               >

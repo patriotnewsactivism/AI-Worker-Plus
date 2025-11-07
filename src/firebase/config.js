@@ -24,13 +24,13 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 // Connect to emulators in development
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.MODE === 'development') {
   try {
     connectAuthEmulator(auth, "http://localhost:9099");
     connectFirestoreEmulator(db, 'localhost', 8080);
     connectStorageEmulator(storage, "localhost", 9199);
   } catch (error) {
-    console.log('Firebase emulators not running, using production services');
+    console.log('Firebase emulators not running, using production services', error);
   }
 }
 

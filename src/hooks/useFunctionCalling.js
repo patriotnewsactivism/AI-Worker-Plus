@@ -20,7 +20,7 @@ export const useFunctionCalling = () => {
   // Unregister a function
   const unregisterFunction = useCallback((name) => {
     setAvailableFunctions(prev => {
-      const { [name]: removed, ...rest } = prev;
+      const { [name]: _removed, ...rest } = prev;
       return rest;
     });
   }, []);

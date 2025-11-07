@@ -140,6 +140,7 @@ const FileUpload = ({ onFileProcessed, githubConnected, onGitHubConnect, onGitHu
               zipContent += `## File: ${entry.filename} [Binary File]\n\n`;
             }
           } catch (error) {
+            console.error('Error reading file:', error);
             zipContent += `## File: ${entry.filename} [Error Reading File]\n\n`;
           }
         }

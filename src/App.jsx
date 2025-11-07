@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback, memo, lazy, Suspense } from 'react';
-import { Settings, Brain, Zap, Target, Rocket, Globe } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
+import { Settings, Brain, Zap, Target, Rocket, Globe, Bot, Calendar, FileText, BarChart3, Lightbulb, Code, Clock } from 'lucide-react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { Toaster, toast } from 'react-hot-toast';
 import { isPWA } from './registerSW.js';
@@ -22,7 +22,7 @@ const SettingsPanel = lazy(() => import('./components/Settings.jsx'));
 
 function App() {
   // PWA Detection
-  const [isInstalled, setIsInstalled] = useState(isPWA());
+  const [isInstalled] = useState(isPWA());
   
   // File handling state
   const [githubConnected, setGithubConnected] = useState(false);
@@ -64,7 +64,7 @@ function App() {
   const theme = useTheme();
   
   // Initialize accessibility
-  const accessibility = useAccessibility();
+  useAccessibility();
   
   // Authentication state
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -193,11 +193,9 @@ function App() {
   
   // Voice recognition
   const {
-    transcript,
     interimTranscript,
     finalTranscript,
-    resetTranscript,
-    listening
+    resetTranscript
   } = useSpeechRecognition();
   
   // Handle voice recognition
@@ -333,10 +331,7 @@ function App() {
       if (shouldSaveToMemory(input, aiResponse)) {
         saveToMemory(input, aiResponse);
       }
-      
-      // Simulate cloud sync
-      simulateCloudSync();
-      
+
     } catch (error) {
       console.error('Error processing input:', error);
       toast.error('❌ Error processing request');
@@ -355,7 +350,8 @@ function App() {
   };
   
   // Generate AI response using REAL API ONLY - NO SIMULATIONS
-  const generateAIResponse = async (input) => {
+  // Note: This function is kept for reference but not currently used
+  const _generateAIResponse = async (input) => {
     // FORCE API KEY REQUIREMENT
     if (!apiKey || apiKey.trim() === '') {
       const settingsMessage = `❌ **API Key Required**
@@ -1005,7 +1001,7 @@ Is there anything specific about the results you'd like me to explain?`,
     toast.success('🔗 GitHub connected successfully!');
   }, []);
 
-  const handleGitHubPull = useCallback(async (repoUrl) => {
+  const handleGitHubPull = useCallback(async () => {
     toast.promise(
       new Promise((resolve) => {
         setTimeout(() => {
@@ -1026,7 +1022,7 @@ Is there anything specific about the results you'd like me to explain?`,
   }, []);
   
   // Get cloud sync status icon
-  const getCloudSyncIcon = () => {
+  const _getCloudSyncIcon = () => {
     switch (cloudSyncStatus) {
       case 'syncing':
         return '🔄';
