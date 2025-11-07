@@ -7,6 +7,7 @@ import { useAgentManager, AGENT_TYPES } from './agents/AgentManager.jsx';
 import { useContextAwareAI } from './hooks/useContextAwareAI';
 import { useAuth } from './hooks/useAuth';
 import { useCloudSync } from './hooks/useCloudSync';
+import useFirebaseStatus from './hooks/useFirebaseStatus';
 import { useTheme } from './hooks/useTheme';
 import { useKeyboardShortcuts, createDefaultShortcuts } from './hooks/useKeyboardShortcuts';
 import { useAccessibility } from './hooks/useAccessibility';
@@ -19,6 +20,12 @@ import './App.css';
 const Sidebar = lazy(() => import('./components/Sidebar.jsx'));
 const Chat = lazy(() => import('./components/Chat.jsx'));
 const SettingsPanel = lazy(() => import('./components/Settings.jsx'));
+
+const FIREBASE_STATUS_ICONS = {
+  checking: '⏳',
+  ready: '✅',
+  error: '⚠️'
+};
 
 function App() {
   // PWA Detection
@@ -59,7 +66,15 @@ function App() {
   
   // Initialize cloud sync
   const cloudSync = useCloudSync(user);
-  
+
+  // Monitor Firebase readiness
+  const firebaseStatus = useFirebaseStatus();
+  const firebaseStatusIcon = FIREBASE_STATUS_ICONS[firebaseStatus.status] ?? FIREBASE_STATUS_ICONS.checking;
+  const firebaseServices = useMemo(
+    () => Object.entries(firebaseStatus.services ?? {}),
+    [firebaseStatus.services]
+  );
+
   // Initialize theme system
   const theme = useTheme();
   
@@ -1051,8 +1066,54 @@ Is there anything specific about the results you'd like me to explain?`,
             <div className={`cloud-status ${cloudSync.syncStatus}`} title={`Cloud status: ${cloudSync.syncStatus}`}>
               {cloudSync.isOnline ? '☁️' : '📡'}
             </div>
-            
-            <ThemeToggle 
+
+            <div
+              className={`firebase-status firebase-status--${firebaseStatus.status}`}
+              title={`Firebase status: ${firebaseStatus.message}`}
+            >
+              <div className="firebase-status__header">
+                <span className="firebase-status__icon">{firebaseStatusIcon}</span>
+                <span className="firebase-status__title">Firebase</span>
+                <button
+                  type="button"
+                  className="firebase-status__refresh"
+                  onClick={firebaseStatus.refresh}
+                  disabled={firebaseStatus.status === 'checking'}
+                  aria-label="Re-check Firebase connection"
+                  title="Re-check Firebase connection"
+                >
+                  ↻
+                </button>
+              </div>
+              <p className="firebase-status__message">{firebaseStatus.message}</p>
+              <div className="firebase-status__services">
+                {firebaseServices.map(([key, service]) => (
+                  <div
+                    key={key}
+                    className={`firebase-status__service firebase-status__service--${service.status}`}
+                  >
+                    <span className="firebase-status__service-icon">
+                      {FIREBASE_STATUS_ICONS[service.status] ?? FIREBASE_STATUS_ICONS.checking}
+                    </span>
+                    <span className="firebase-status__service-text">
+                      <strong>{service.label}:</strong> {service.message}
+                    </span>
+                    {service.link ? (
+                      <a
+                        className="firebase-status__service-link"
+                        href={service.link}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {service.linkLabel || 'View guide'}
+                      </a>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <ThemeToggle
               theme={theme.theme}
               toggleTheme={theme.toggleTheme}
               setThemeMode={theme.setThemeMode}

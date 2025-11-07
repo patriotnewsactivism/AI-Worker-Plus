@@ -171,6 +171,115 @@ body::before {
   animation: none;
 }
 
+.firebase-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 220px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  backdrop-filter: var(--glass-backdrop);
+}
+
+.firebase-status--ready {
+  border-color: rgba(16, 185, 129, 0.7);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+}
+
+.firebase-status--error {
+  border-color: rgba(239, 68, 68, 0.7);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+}
+
+.firebase-status--checking {
+  border-style: dashed;
+  color: var(--text-muted);
+}
+
+.firebase-status__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.firebase-status__icon {
+  font-size: 1rem;
+}
+
+.firebase-status__title {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.firebase-status__refresh {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.2rem;
+  border-radius: 6px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.firebase-status__refresh:hover:not(:disabled) {
+  background: rgba(148, 163, 184, 0.2);
+  transform: translateY(-1px);
+}
+
+.firebase-status__refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.firebase-status__message {
+  margin: 0;
+  font-weight: 500;
+}
+
+.firebase-status__services {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.firebase-status__service {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.firebase-status__service-icon {
+  font-size: 0.85rem;
+  margin-top: 0.1rem;
+}
+
+.firebase-status__service-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.firebase-status__service-text strong {
+  font-weight: 600;
+}
+
+.firebase-status__service-link {
+  color: var(--secondary);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.firebase-status__service-link:hover {
+  color: var(--text-primary);
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
