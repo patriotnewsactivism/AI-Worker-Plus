@@ -1,12 +1,8 @@
-import React from 'react';
+import { describe, expect, it } from 'vitest';
 
-function App() {
-  return (
-    <div className="app-container">
-      <h1>Test App</h1>
-      <p>If you can see this, React is working!</p>
-    </div>
-  );
-}
-
-export default App;
+// Placeholder test to ensure Vitest configuration runs successfully.
+describe('Application smoke test', () => {
+  it('runs the test harness', () => {
+    expect(true).toBe(true);
+  });
+});
