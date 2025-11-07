@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Sun, Moon, Palette, Settings } from 'lucide-react';
+import { Sun, Moon, Palette } from 'lucide-react';
 
 const ThemeToggle = memo(({ 
   theme, 
@@ -14,10 +14,23 @@ const ThemeToggle = memo(({
   const [customThemeData, setCustomThemeData] = useState({
     name: '',
     primary: '#8B5CF6',
+    primaryDark: '#7C3AED',
     secondary: '#0EA5E9',
-    background: '#0F172A',
-    surface: '#1E293B',
-    text: '#F1F5F9'
+    accent: '#EC4899',
+    success: '#10B981',
+    warning: '#F59E0B',
+    danger: '#EF4444',
+    darkBg: '#0F172A',
+    darkCard: 'rgba(30, 41, 59, 0.6)',
+    darkBorder: 'rgba(56, 64, 82, 0.7)',
+    glassBg: 'rgba(30, 41, 59, 0.6)',
+    glassBorder: 'rgba(56, 64, 82, 0.7)',
+    glassBackdrop: 'blur(12px)',
+    textPrimary: '#F1F5F9',
+    textSecondary: '#E2E8F0',
+    textMuted: '#CBD5E1',
+    textContrast: '#FFFFFF',
+    textWarning: '#FDE68A'
   });
 
   const handleCustomThemeSubmit = (e) => {
@@ -100,26 +113,26 @@ const ThemeToggle = memo(({
                 <label>Background</label>
                 <input
                   type="color"
-                  value={customThemeData.background}
-                  onChange={(e) => setCustomThemeData(prev => ({ ...prev, background: e.target.value }))}
+                  value={customThemeData.darkBg}
+                  onChange={(e) => setCustomThemeData(prev => ({ ...prev, darkBg: e.target.value }))}
                 />
               </div>
-              
+
               <div className="theme-input-group">
-                <label>Surface</label>
+                <label>Glass Surface</label>
                 <input
                   type="color"
-                  value={customThemeData.surface}
-                  onChange={(e) => setCustomThemeData(prev => ({ ...prev, surface: e.target.value }))}
+                  value={customThemeData.glassBg}
+                  onChange={(e) => setCustomThemeData(prev => ({ ...prev, glassBg: e.target.value }))}
                 />
               </div>
-              
+
               <div className="theme-input-group">
                 <label>Text Color</label>
                 <input
                   type="color"
-                  value={customThemeData.text}
-                  onChange={(e) => setCustomThemeData(prev => ({ ...prev, text: e.target.value }))}
+                  value={customThemeData.textPrimary}
+                  onChange={(e) => setCustomThemeData(prev => ({ ...prev, textPrimary: e.target.value }))}
                 />
               </div>
             </div>
