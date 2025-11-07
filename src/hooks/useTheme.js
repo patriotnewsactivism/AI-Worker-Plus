@@ -1,5 +1,107 @@
 import { useState, useEffect, useCallback } from 'react';
 
+const DEFAULT_THEMES = {
+  dark: {
+    name: 'Dark',
+    colors: {
+      primary: '#8B5CF6',
+      primaryDark: '#7C3AED',
+      secondary: '#0EA5E9',
+      success: '#10B981',
+      warning: '#F59E0B',
+      danger: '#EF4444',
+      accent: '#EC4899',
+      background: '#0F172A',
+      darkBg: '#0F172A',
+      surface: '#1E293B',
+      darkCard: 'rgba(30, 41, 59, 0.6)',
+      darkBorder: 'rgba(56, 64, 82, 0.7)',
+      text: '#F1F5F9',
+      textPrimary: '#F1F5F9',
+      textSecondary: '#E2E8F0',
+      textMuted: '#CBD5E1',
+      textContrast: '#FFFFFF',
+      textWarning: '#FDE68A',
+      border: 'rgba(56, 64, 82, 0.7)',
+      glassBg: 'rgba(30, 41, 59, 0.6)',
+      glassBorder: 'rgba(56, 64, 82, 0.7)',
+      glassBackdrop: 'blur(12px)',
+      bodyGradient: 'linear-gradient(135deg, #0F172A, #1E293B)',
+      accentGradient: 'linear-gradient(135deg, #8B5CF6, #0EA5E9)',
+      accentGradientAlt: 'linear-gradient(135deg, #EC4899, #F59E0B)',
+      focusOutline: '0 0 0 3px rgba(139, 92, 246, 0.4)'
+    }
+  },
+  light: {
+    name: 'Light',
+    colors: {
+      primary: '#7C3AED',
+      primaryDark: '#6D28D9',
+      secondary: '#0284C7',
+      success: '#059669',
+      warning: '#D97706',
+      danger: '#DC2626',
+      accent: '#DB2777',
+      background: '#FFFFFF',
+      darkBg: '#F8FAFC',
+      surface: '#F1F5F9',
+      darkCard: 'rgba(255, 255, 255, 0.85)',
+      darkBorder: 'rgba(148, 163, 184, 0.4)',
+      text: '#1E293B',
+      textPrimary: '#1E293B',
+      textSecondary: '#475569',
+      textMuted: '#64748B',
+      textContrast: '#0F172A',
+      textWarning: '#B45309',
+      border: 'rgba(148, 163, 184, 0.3)',
+      glassBg: 'rgba(255, 255, 255, 0.7)',
+      glassBorder: 'rgba(148, 163, 184, 0.6)',
+      glassBackdrop: 'blur(18px)',
+      bodyGradient: 'linear-gradient(135deg, #FFFFFF, #E2E8F0)',
+      accentGradient: 'linear-gradient(135deg, #7C3AED, #0284C7)',
+      accentGradientAlt: 'linear-gradient(135deg, #DB2777, #D97706)',
+      focusOutline: '0 0 0 3px rgba(30, 64, 175, 0.3)'
+    }
+  },
+  highContrast: {
+    name: 'High Contrast',
+    colors: {
+      primary: '#FFD60A',
+      primaryDark: '#FFB200',
+      secondary: '#00A3FF',
+      success: '#00E68A',
+      warning: '#FF9E00',
+      danger: '#FF3B3B',
+      accent: '#FF1A75',
+      background: '#000000',
+      darkBg: '#050505',
+      surface: '#0A0A0A',
+      darkCard: 'rgba(15, 15, 15, 0.95)',
+      darkBorder: '#FFFFFF',
+      text: '#FFFFFF',
+      textPrimary: '#FFFFFF',
+      textSecondary: '#F5F5F5',
+      textMuted: '#CCCCCC',
+      textContrast: '#000000',
+      textWarning: '#FFE066',
+      border: '#FFFFFF',
+      glassBg: 'rgba(0, 0, 0, 0.92)',
+      glassBorder: '#FFFFFF',
+      glassBackdrop: 'blur(4px)',
+      bodyGradient: 'linear-gradient(135deg, #000000, #050505)',
+      accentGradient: 'linear-gradient(135deg, #FFD60A, #00A3FF)',
+      accentGradientAlt: 'linear-gradient(135deg, #FF1A75, #FF9E00)',
+      focusOutline: '0 0 0 3px #FFFFFF'
+    }
+  }
+};
+
+const toCssVarName = (key) =>
+  key
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/\s+/g, '-')
+    .toLowerCase();
+
 // Theme hook for dark/light mode and custom themes
 export const useTheme = () => {
   const [theme, setTheme] = useState('dark');
@@ -34,6 +136,19 @@ export const useTheme = () => {
       localStorage.setItem('aiWorkerCustomTheme', JSON.stringify(customTheme));
     }
   }, [customTheme]);
+
+  const applyDefaultTheme = useCallback((themeKey) => {
+    const root = document.documentElement;
+    const themeData = DEFAULT_THEMES[themeKey] || DEFAULT_THEMES.dark;
+
+    if (themeData?.colors) {
+      Object.entries(themeData.colors).forEach(([key, value]) => {
+        root.style.setProperty(`--${toCssVarName(key)}`, value);
+      });
+    }
+
+    return themeData;
+  }, []);
 
   // Toggle between dark and light theme
   const toggleTheme = useCallback(() => {
@@ -110,10 +225,11 @@ export const useTheme = () => {
     if (!themeData) return;
 
     const root = document.documentElement;
-    
+    root.setAttribute('data-theme', 'custom');
+
     // Apply color variables
     Object.entries(themeData.colors).forEach(([key, value]) => {
-      root.style.setProperty(`--${key}`, value);
+      root.style.setProperty(`--${toCssVarName(key)}`, value);
     });
 
     // Apply font variables
@@ -142,6 +258,19 @@ export const useTheme = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const root = document.documentElement;
+
+    if (customTheme) {
+      root.setAttribute('data-theme', 'custom');
+      applyCustomTheme(customTheme);
+      return;
+    }
+
+    root.setAttribute('data-theme', theme);
+    applyDefaultTheme(theme);
+  }, [theme, customTheme, applyCustomTheme, applyDefaultTheme]);
+
   // Reset to default theme
   const resetTheme = useCallback(() => {
     setCustomTheme(null);
@@ -167,45 +296,7 @@ export const useTheme = () => {
       return customTheme;
     }
 
-    // Default themes
-    const themes = {
-      dark: {
-        name: 'Dark',
-        colors: {
-          primary: '#8B5CF6',
-          secondary: '#0EA5E9',
-          success: '#10B981',
-          warning: '#F59E0B',
-          danger: '#EF4444',
-          accent: '#EC4899',
-          background: '#0F172A',
-          surface: '#1E293B',
-          text: '#F1F5F9',
-          textSecondary: '#E2E8F0',
-          textMuted: '#CBD5E1',
-          border: 'rgba(56, 64, 82, 0.7)'
-        }
-      },
-      light: {
-        name: 'Light',
-        colors: {
-          primary: '#7C3AED',
-          secondary: '#0284C7',
-          success: '#059669',
-          warning: '#D97706',
-          danger: '#DC2626',
-          accent: '#DB2777',
-          background: '#FFFFFF',
-          surface: '#F8FAFC',
-          text: '#1E293B',
-          textSecondary: '#475569',
-          textMuted: '#64748B',
-          border: 'rgba(148, 163, 184, 0.3)'
-        }
-      }
-    };
-
-    return themes[theme] || themes.dark;
+    return DEFAULT_THEMES[theme] || DEFAULT_THEMES.dark;
   }, [theme, customTheme]);
 
   return {

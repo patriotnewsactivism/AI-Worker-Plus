@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Sun, Moon, Palette, Settings } from 'lucide-react';
+import { Sun, Moon, Palette, Settings, Contrast } from 'lucide-react';
 
 const ThemeToggle = memo(({ 
   theme, 
@@ -34,30 +34,43 @@ const ThemeToggle = memo(({
           className={`theme-btn ${theme === 'light' ? 'active' : ''}`}
           onClick={() => setThemeMode('light')}
           title="Light theme"
+          aria-pressed={theme === 'light'}
         >
           <Sun size={16} />
         </button>
-        
+
         <button
           className={`theme-btn ${theme === 'dark' ? 'active' : ''}`}
           onClick={() => setThemeMode('dark')}
           title="Dark theme"
+          aria-pressed={theme === 'dark'}
         >
           <Moon size={16} />
         </button>
-        
+
+        <button
+          className={`theme-btn ${theme === 'highContrast' ? 'active' : ''}`}
+          onClick={() => setThemeMode('highContrast')}
+          title="High contrast theme"
+          aria-pressed={theme === 'highContrast'}
+        >
+          <Contrast size={16} />
+        </button>
+
         <button
           className="theme-btn"
           onClick={toggleTheme}
           title="Toggle theme"
+          aria-pressed="false"
         >
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
-        
+
         <button
           className="theme-btn"
           onClick={() => setShowCustomTheme(!showCustomTheme)}
           title="Custom theme"
+          aria-expanded={showCustomTheme}
         >
           <Palette size={16} />
         </button>

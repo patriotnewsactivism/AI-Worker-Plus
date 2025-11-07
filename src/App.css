@@ -15,7 +15,9 @@
   --warning: #F59E0B; /* vibrant amber */
   --danger: #EF4444; /* vibrant red */
   --accent: #EC4899; /* vibrant pink */
+  --background: #0F172A;
   --dark-bg: #0F172A; /* dark slate */
+  --surface: #1E293B;
   --dark-card: rgba(30, 41, 59, 0.6); /* frosted glass effect */
   --dark-border: rgba(56, 64, 82, 0.7);
   --text-primary: #F1F5F9;
@@ -23,11 +25,70 @@
   --text-muted: #CBD5E1;
   --text-contrast: #FFFFFF; /* High contrast text */
   --text-warning: #FDE68A;
+  --border: rgba(56, 64, 82, 0.7);
   --accent-gradient: linear-gradient(135deg, var(--primary), var(--secondary));
   --accent-gradient-alt: linear-gradient(135deg, var(--accent), var(--warning));
   --glass-bg: rgba(30, 41, 59, 0.6);
   --glass-border: rgba(56, 64, 82, 0.7);
   --glass-backdrop: blur(12px);
+  --body-gradient: linear-gradient(135deg, #0F172A, #1E293B);
+  --focus-outline: 0 0 0 3px rgba(139, 92, 246, 0.4);
+}
+
+:root[data-theme='light'] {
+  --primary: #7C3AED;
+  --primary-dark: #6D28D9;
+  --secondary: #0284C7;
+  --success: #059669;
+  --warning: #D97706;
+  --danger: #DC2626;
+  --accent: #DB2777;
+  --background: #FFFFFF;
+  --dark-bg: #F8FAFC;
+  --surface: #F1F5F9;
+  --dark-card: rgba(255, 255, 255, 0.85);
+  --dark-border: rgba(148, 163, 184, 0.4);
+  --text-primary: #1E293B;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --text-contrast: #0F172A;
+  --text-warning: #B45309;
+  --border: rgba(148, 163, 184, 0.3);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(148, 163, 184, 0.6);
+  --glass-backdrop: blur(18px);
+  --body-gradient: linear-gradient(135deg, #FFFFFF, #E2E8F0);
+  --accent-gradient: linear-gradient(135deg, #7C3AED, #0284C7);
+  --accent-gradient-alt: linear-gradient(135deg, #DB2777, #D97706);
+  --focus-outline: 0 0 0 3px rgba(30, 64, 175, 0.3);
+}
+
+:root[data-theme='highContrast'] {
+  --primary: #FFD60A;
+  --primary-dark: #FFB200;
+  --secondary: #00A3FF;
+  --success: #00E68A;
+  --warning: #FF9E00;
+  --danger: #FF3B3B;
+  --accent: #FF1A75;
+  --background: #000000;
+  --dark-bg: #050505;
+  --surface: #0A0A0A;
+  --dark-card: rgba(15, 15, 15, 0.95);
+  --dark-border: #FFFFFF;
+  --text-primary: #FFFFFF;
+  --text-secondary: #F5F5F5;
+  --text-muted: #CCCCCC;
+  --text-contrast: #000000;
+  --text-warning: #FFE066;
+  --border: #FFFFFF;
+  --glass-bg: rgba(0, 0, 0, 0.92);
+  --glass-border: #FFFFFF;
+  --glass-backdrop: blur(4px);
+  --body-gradient: linear-gradient(135deg, #000000, #050505);
+  --accent-gradient: linear-gradient(135deg, #FFD60A, #00A3FF);
+  --accent-gradient-alt: linear-gradient(135deg, #FF1A75, #FF9E00);
+  --focus-outline: 0 0 0 3px #FFFFFF;
 }
 
 body {
@@ -35,7 +96,7 @@ body {
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #0F172A, #1E293B);
+  background: var(--body-gradient, linear-gradient(135deg, #0F172A, #1E293B));
   min-height: 100vh;
   color: var(--text-primary);
   position: relative;
@@ -1807,6 +1868,13 @@ body::before {
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.theme-btn:focus-visible,
+.apply-theme-btn:focus-visible,
+.reset-theme-btn:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--focus-outline);
 }
 
 .theme-btn.active {
